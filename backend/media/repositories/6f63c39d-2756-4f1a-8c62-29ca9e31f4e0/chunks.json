@@ -1,0 +1,26 @@
+[
+  {
+    "file_path": "main.py",
+    "chunk_type": "function",
+    "name": "add",
+    "start_line": 1,
+    "end_line": 2,
+    "content": "def add(a, b):\n    return a + b"
+  },
+  {
+    "file_path": "main.py",
+    "chunk_type": "function",
+    "name": "subtract",
+    "start_line": 5,
+    "end_line": 6,
+    "content": "def subtract(a, b):\n    return a - b"
+  },
+  {
+    "file_path": "README.md",
+    "chunk_type": "text",
+    "name": "README.md lines 1-12",
+    "start_line": 1,
+    "end_line": 12,
+    "content": "# Sample Project\n\nThis is a simple Python calculator project.\n\n## Functions\n\n- `add(a, b)`: Returns the sum of two numbers.\n- `subtract(a, b)`: Returns the difference between two numbers.\n\n## Technology\n\n- Python"
+  }
+]
