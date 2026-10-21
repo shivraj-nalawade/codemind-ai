@@ -8,6 +8,7 @@ from .views import (
     build_semantic_index_view,
     semantic_search_view,
     hybrid_search_view,
+    ask_repository,
 )
 
 urlpatterns = [
@@ -51,5 +52,11 @@ urlpatterns = [
         "<uuid:repository_id>/hybrid-search/",
         hybrid_search_view,
         name="hybrid_search",
+    ),
+
+    path(
+    "<uuid:repository_id>/ask/",
+    ask_repository,
+    name="ask_repository",
     ),
 ]

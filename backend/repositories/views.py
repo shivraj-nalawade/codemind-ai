@@ -10,6 +10,8 @@ from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from .hybrid_search import hybrid_search
+from .llm_service import generate_answer
 
 from .services import safe_extract_repository
 from .semantic_search import build_semantic_index, semantic_search
@@ -325,4 +327,110 @@ def hybrid_search_view(request, repository_id):
         return JsonResponse(
             {"error": "Could not run hybrid search."},
             status=500,
+        )
+
+
+
+@csrf_exempt  # Local prototype only; secure before deployment.
+@require_POST
+def ask_repository(request, repository_id):
+    """Answer a question using retrieved repository evidence."""
+
+    try:
+        body = json.loads(request.body.decode("utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse(
+            {"error": "Request body must contain valid JSON."},
+            status=400,
+        )
+
+    question = body.get("question", "")
+
+    if not isinstance(question, str) or not question.strip():
+        return JsonResponse(
+            {"error": "Provide a question as a non-empty string."},
+            status=400,
+        )
+
+    question = question.strip()
+
+    if len(question) > 1000:
+        return JsonResponse(
+            {"error": "Question must be 1000 characters or fewer."},
+            status=400,
+        )
+
+    try:
+        safe_id = UUID(str(repository_id))
+    except ValueError:
+        return JsonResponse(
+            {"error": "Invalid repository ID."},
+            status=400,
+        )
+
+    repositories_root = (
+        Path(settings.MEDIA_ROOT) / "repositories"
+    ).resolve()
+
+    repository_dir = (
+        repositories_root / str(safe_id)
+    ).resolve()
+
+    if not repository_dir.is_relative_to(repositories_root):
+        return JsonResponse(
+            {"error": "Invalid repository ID."},
+            status=400,
+        )
+
+    if not (repository_dir / "metadata.json").is_file():
+        return JsonResponse(
+            {"error": "Repository not found."},
+            status=404,
+        )
+
+    if not (repository_dir / "chunks.json").is_file():
+        return JsonResponse(
+            {"error": "Parse the repository before asking questions."},
+            status=409,
+        )
+
+    if not (repository_dir / "semantic_index.npz").is_file():
+        return JsonResponse(
+            {"error": "Build the semantic index before asking questions."},
+            status=409,
+        )
+
+    try:
+        sources = hybrid_search(
+            repository_dir,
+            question,
+            top_k=5,
+        )
+
+        answer = generate_answer(question, sources)
+
+        citations = [
+            {
+                "file_path": item.get("file_path"),
+                "name": item.get("name"),
+                "start_line": item.get("start_line"),
+                "end_line": item.get("end_line"),
+                "content": item.get("content"),
+            }
+            for item in sources
+        ]
+
+        return JsonResponse({
+            "repository_id": str(safe_id),
+            "question": question,
+            "answer": answer,
+            "sources": citations,
+        })
+
+    except FileNotFoundError as exc:
+        return JsonResponse({"error": str(exc)}, status=409)
+    except (OSError, RuntimeError, ValueError, TypeError):
+        return JsonResponse(
+            {"error": "Could not generate an answer. Check the Django and Ollama logs."},
+            status=502,
         )
