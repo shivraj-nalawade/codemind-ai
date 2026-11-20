@@ -17,7 +17,7 @@ def get_model():
 
 
 def load_chunks(repository_dir):
-    """Read chunks created by the existing parser."""
+    """Read chunks created by the repository parser."""
     path = Path(repository_dir) / "chunks.json"
 
     if not path.is_file():
@@ -35,11 +35,24 @@ def load_chunks(repository_dir):
 
 
 def chunk_text(chunk):
-    """Build searchable text while retaining source information separately."""
+    """Build metadata-aware text for semantic code retrieval."""
+
+    imports = chunk.get("imports", [])
+
+    if isinstance(imports, list):
+        imports_text = ", ".join(imports)
+    else:
+        imports_text = str(imports)
+
     return (
         f"File: {chunk.get('file_path', '')}\n"
         f"Type: {chunk.get('chunk_type', '')}\n"
         f"Name: {chunk.get('name', '')}\n"
+        f"Parent Class: {chunk.get('parent_class') or ''}\n"
+        f"Parent Function: {chunk.get('parent_function') or ''}\n"
+        f"Signature: {chunk.get('signature', '')}\n"
+        f"Imports: {imports_text}\n"
+        f"Part: {chunk.get('part', '')}\n"
         f"Code or documentation:\n{chunk.get('content', '')}"
     )
 
@@ -78,6 +91,10 @@ def build_semantic_index(repository_dir):
 
 def semantic_search(repository_dir, query, top_k=5):
     """Retrieve chunks by semantic similarity."""
+
+    if not query or not query.strip():
+        return []
+
     repository_dir = Path(repository_dir)
     chunks = load_chunks(repository_dir)
     index_path = repository_dir / "semantic_index.npz"
@@ -110,7 +127,9 @@ def semantic_search(repository_dir, query, top_k=5):
     # Normalized vectors make the dot product equal cosine similarity.
     scores = embeddings @ query_embedding
 
-    ranked_indices = np.argsort(scores)[::-1][:top_k]
+    result_limit = max(1, min(int(top_k), 15))
+    ranked_indices = np.argsort(scores)[::-1][:result_limit]
+
     results = []
 
     for index in ranked_indices:
@@ -123,6 +142,12 @@ def semantic_search(repository_dir, query, top_k=5):
             "start_line": chunk.get("start_line"),
             "end_line": chunk.get("end_line"),
             "content": chunk.get("content"),
+            "parent_class": chunk.get("parent_class"),
+            "parent_function": chunk.get("parent_function"),
+            "signature": chunk.get("signature"),
+            "imports": chunk.get("imports", []),
+            "part": chunk.get("part"),
+            "total_parts": chunk.get("total_parts"),
             "score": round(float(scores[index]), 4),
         })
 

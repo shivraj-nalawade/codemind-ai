@@ -139,6 +139,11 @@ def search_repository(request, repository_id):
         chunks = load_chunks(repository_dir)
         results = search_chunks(chunks, query, top_k)
 
+        index_path = repository_dir / "semantic_index.npz"
+
+        if index_path.exists():
+            index_path.unlink()
+
         return JsonResponse({
             "repository_id": str(repository_id),
             "query": query,
@@ -410,15 +415,23 @@ def ask_repository(request, repository_id):
         answer = generate_answer(question, sources)
 
         citations = [
-            {
-                "file_path": item.get("file_path"),
-                "name": item.get("name"),
-                "start_line": item.get("start_line"),
-                "end_line": item.get("end_line"),
-                "content": item.get("content"),
-            }
-            for item in sources
-        ]
+    {
+        "file_path": item.get("file_path"),
+        "name": item.get("name"),
+        "chunk_type": item.get("chunk_type"),
+        "start_line": item.get("start_line"),
+        "end_line": item.get("end_line"),
+        "parent_class": item.get("parent_class"),
+        "parent_function": item.get("parent_function"),
+        "signature": item.get("signature"),
+        "imports": item.get("imports", []),
+        "part": item.get("part"),
+        "total_parts": item.get("total_parts"),
+        "content": item.get("content"),
+        "rrf_score": item.get("rrf_score"),
+    }
+    for item in sources
+]
 
         return JsonResponse({
             "repository_id": str(safe_id),

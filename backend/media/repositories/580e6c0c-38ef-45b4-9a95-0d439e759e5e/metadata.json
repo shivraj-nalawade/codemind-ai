@@ -1,0 +1,39 @@
+{
+  "repository_id": "580e6c0c-38ef-45b4-9a95-0d439e759e5e",
+  "files": [
+    "Disease-Prediction-main/README.md",
+    "Disease-Prediction-main/app.py",
+    "Disease-Prediction-main/requirements.txt",
+    "Disease-Prediction-main/style.css"
+  ],
+  "skipped_files": [
+    {
+      "path": "Disease-Prediction-main/.gitignore",
+      "reason": "Unsupported file type"
+    },
+    {
+      "path": "Disease-Prediction-main/Weather-related disease prediction.csv",
+      "reason": "Unsupported file type"
+    },
+    {
+      "path": "Disease-Prediction-main/Wheather Related Disease Prediction.csv",
+      "reason": "Unsupported file type"
+    },
+    {
+      "path": "Disease-Prediction-main/background.jpg",
+      "reason": "Unsupported file type"
+    },
+    {
+      "path": "Disease-Prediction-main/background.png",
+      "reason": "Unsupported file type"
+    },
+    {
+      "path": "Disease-Prediction-main/disease_prediction_pipeline.pkl",
+      "reason": "File exceeds 2 MB limit"
+    },
+    {
+      "path": "Disease-Prediction-main/le_prognosis.pkl",
+      "reason": "Unsupported file type"
+    }
+  ]
+}

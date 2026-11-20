@@ -1,3 +1,4 @@
+
 import type { ChangeEvent } from 'react'
 
 type Props = {
@@ -20,30 +21,39 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="hidden w-72 shrink-0 flex-col border-r border-white/10 bg-[#0d121e] p-5 md:flex">
+    <aside className="hidden w-72 shrink-0 flex-col border-r border-[#303030] bg-[#191919] p-5 md:flex">
+
+      {/* Logo */}
       <a href="/" className="mb-10 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400 text-lg font-black text-slate-950">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ff8a00] text-lg font-black text-black">
           C
         </span>
-        <span className="text-xl font-semibold tracking-tight">
-          CodeMind <span className="text-cyan-400">AI</span>
+
+        <span className="text-xl font-semibold tracking-tight text-white">
+          CodeMind <span className="text-[#ff8a00]">AI</span>
         </span>
       </a>
 
-      <p className="mb-3 px-1 text-xs font-semibold tracking-[0.18em] text-slate-500">
+      {/* Workspace */}
+      <p className="mb-3 px-1 text-xs font-semibold tracking-[0.18em] text-[#888888]">
         WORKSPACE
       </p>
 
-      <label className="group mb-8 flex cursor-pointer flex-col items-start rounded-2xl border border-dashed border-slate-700 bg-slate-900/60 p-4 transition hover:border-cyan-400/60 hover:bg-cyan-400/5">
-        <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/10 text-xl text-cyan-300">
+      {/* Repository upload */}
+      <label className="group mb-8 flex cursor-pointer flex-col items-start rounded-2xl border border-dashed border-[#454545] bg-[#202020] p-4 transition hover:border-[#ff8a00] hover:bg-[#292929]">
+
+        <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#ff8a00]/10 text-xl text-[#ff8a00]">
           ↑
         </span>
-        <span className="font-semibold">
+
+        <span className="font-semibold text-white">
           {busy ? 'Processing...' : 'Upload repository'}
         </span>
-        <span className="mt-1 text-sm text-slate-500">
+
+        <span className="mt-1 text-sm text-[#999999]">
           Choose a project ZIP file
         </span>
+
         <input
           type="file"
           accept=".zip,application/zip"
@@ -53,32 +63,45 @@ export default function Sidebar({
         />
       </label>
 
-      <p className="mb-3 px-1 text-xs font-semibold tracking-[0.18em] text-slate-500">
+      {/* Current project */}
+      <p className="mb-3 px-1 text-xs font-semibold tracking-[0.18em] text-[#888888]">
         CURRENT PROJECT
       </p>
 
       {repositoryId ? (
-        <div className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-400/10 text-violet-300">
+        <div className="flex items-start gap-3 rounded-xl border border-[#333333] bg-[#202020] p-3">
+
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#ff8a00]/10 text-[#ff8a00]">
             {'{ }'}
           </span>
+
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{repositoryName}</p>
+            <p className="truncate text-sm font-medium text-white">
+              {repositoryName}
+            </p>
+
             <p className="mt-1 text-xs text-emerald-400">
               ● Repository indexed
             </p>
           </div>
         </div>
       ) : (
-        <p className="px-1 text-sm leading-6 text-slate-500">
+        <p className="px-1 text-sm leading-6 text-[#999999]">
           Upload a ZIP to start exploring your code.
         </p>
       )}
 
-      <div className="mt-auto border-t border-white/10 pt-5">
-        <p className="text-sm font-medium">Local AI Assistant</p>
-        <p className="mt-1 text-xs text-slate-500">Powered by Ollama</p>
+      {/* Footer */}
+      <div className="mt-auto border-t border-[#333333] pt-5">
+        <p className="text-sm font-medium text-white">
+          Local AI Assistant
+        </p>
+
+        <p className="mt-1 text-xs text-[#888888]">
+          Powered by Ollama
+        </p>
       </div>
+
     </aside>
   )
 }

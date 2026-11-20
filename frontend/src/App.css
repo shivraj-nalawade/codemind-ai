@@ -1,35 +1,38 @@
-/* CodeMind AI - optional custom styles */
 
-/* Smooth scrolling for the page */
+/* CodeMind AI - Black and Orange Theme */
+
+/* Smooth scrolling */
 html {
   scroll-behavior: smooth;
 }
 
-/* Subtle scrollbar styling */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #334155 #090d16;
+/* Text selection */
+::selection {
+  background: rgb(255 138 0 / 30%);
+  color: #ffffff;
 }
 
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #454545 #171717;
+}
+
+/* Chrome, Edge and other WebKit browsers */
 *::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
 }
 
 *::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #171717;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 10px;
+  background: #454545;
+  border-radius: 8px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
-
-::selection {
-  background: rgb(34 211 238 / 25%);
-  color: #f8fafc;
+  background: #ff8a00;
 }

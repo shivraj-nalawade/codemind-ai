@@ -1,3 +1,4 @@
+
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import CodeBlock from './CodeBlock'
@@ -8,22 +9,22 @@ type Props = {
 
 export default function MarkdownAnswer({ content }: Props) {
   return (
-    <div className="min-w-0 text-sm leading-7 text-slate-300">
+    <div className="min-w-0 text-sm leading-7 text-[#d4d4d4]">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ children }) => (
-            <h1 className="mb-4 mt-6 text-2xl font-bold text-white">
+            <h1 className="mb-4 mt-6 text-2xl font-bold text-[#f5f5f5]">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="mb-3 mt-6 text-xl font-semibold text-white">
+            <h2 className="mb-3 mt-6 text-xl font-semibold text-[#f5f5f5]">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="mb-2 mt-5 text-lg font-semibold text-white">
+            <h3 className="mb-2 mt-5 text-lg font-semibold text-[#f5f5f5]">
               {children}
             </h3>
           ),
@@ -42,12 +43,12 @@ export default function MarkdownAnswer({ content }: Props) {
           ),
           li: ({ children }) => <li className="pl-1">{children}</li>,
           strong: ({ children }) => (
-            <strong className="font-semibold text-white">
+            <strong className="font-semibold text-[#ffffff]">
               {children}
             </strong>
           ),
           blockquote: ({ children }) => (
-            <blockquote className="my-4 border-l-2 border-cyan-400 pl-4 text-slate-400">
+            <blockquote className="my-4 border-l-2 border-[#ff8a00] pl-4 text-[#a3a3a3]">
               {children}
             </blockquote>
           ),
@@ -56,25 +57,25 @@ export default function MarkdownAnswer({ content }: Props) {
               href={href}
               target="_blank"
               rel="noreferrer"
-              className="text-cyan-300 underline underline-offset-4 hover:text-cyan-200"
+              className="text-[#ffad42] underline underline-offset-4 hover:text-[#ff8a00]"
             >
               {children}
             </a>
           ),
           table: ({ children }) => (
-            <div className="my-4 overflow-x-auto rounded-lg border border-slate-700">
+            <div className="my-4 overflow-x-auto rounded-lg border border-[#383838]">
               <table className="w-full border-collapse text-left text-sm">
                 {children}
               </table>
             </div>
           ),
           th: ({ children }) => (
-            <th className="border-b border-slate-700 bg-slate-800 px-3 py-2 text-white">
+            <th className="border-b border-[#383838] bg-[#202020] px-3 py-2 text-[#f5f5f5]">
               {children}
             </th>
           ),
           td: ({ children }) => (
-            <td className="border-b border-slate-800 px-3 py-2">
+            <td className="border-b border-[#303030] px-3 py-2">
               {children}
             </td>
           ),
@@ -92,7 +93,7 @@ export default function MarkdownAnswer({ content }: Props) {
             }
 
             return (
-              <code className="rounded-md border border-slate-700 bg-slate-800 px-1.5 py-0.5 font-mono text-cyan-200">
+              <code className="rounded-md border border-[#383838] bg-[#202020] px-1.5 py-0.5 font-mono text-[#ffad42]">
                 {children}
               </code>
             )

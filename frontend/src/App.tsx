@@ -127,7 +127,7 @@ export default function App() {
   }
 
   return (
-    <main className="flex min-h-screen bg-[#17151d] text-[#f0ece6]">
+    <main className="flex min-h-screen bg-[#111111] text-[#f5f5f5]">
       {/* Left sidebar */}
       <Sidebar
         repositoryName={repositoryName}

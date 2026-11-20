@@ -1,0 +1,576 @@
+{
+    "repository": "media\\repositories\\0af5df46-c93b-4179-b788-31a94fe2b415",
+    "total_chunks": 33,
+    "top_k": 5,
+    "summary": {
+        "BM25": {
+            "precision": 0.2,
+            "recall": 0.39333333333333337,
+            "mrr": 0.4
+        },
+        "Semantic": {
+            "precision": 0.30000000000000004,
+            "recall": 0.61,
+            "mrr": 0.75
+        },
+        "Hybrid": {
+            "precision": 0.24000000000000005,
+            "recall": 0.3883333333333333,
+            "mrr": 0.52
+        }
+    },
+    "details": [
+        {
+            "question_id": "Q1",
+            "method": "BM25",
+            "retrieved_chunk_ids": [
+                12,
+                15,
+                0,
+                31,
+                32
+            ],
+            "relevant_chunk_ids": [
+                12,
+                15
+            ],
+            "precision_at_5": 0.4,
+            "recall_at_5": 1.0,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q1",
+            "method": "Semantic",
+            "retrieved_chunk_ids": [
+                12,
+                15,
+                9,
+                5,
+                16
+            ],
+            "relevant_chunk_ids": [
+                12,
+                15
+            ],
+            "precision_at_5": 0.4,
+            "recall_at_5": 1.0,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q1",
+            "method": "Hybrid",
+            "retrieved_chunk_ids": [
+                12,
+                15,
+                9,
+                16,
+                32
+            ],
+            "relevant_chunk_ids": [
+                12,
+                15
+            ],
+            "precision_at_5": 0.4,
+            "recall_at_5": 1.0,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q2",
+            "method": "BM25",
+            "retrieved_chunk_ids": [
+                0,
+                31,
+                26,
+                24,
+                9
+            ],
+            "relevant_chunk_ids": [
+                14,
+                27
+            ],
+            "precision_at_5": 0.0,
+            "recall_at_5": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question_id": "Q2",
+            "method": "Semantic",
+            "retrieved_chunk_ids": [
+                0,
+                1,
+                6,
+                23,
+                22
+            ],
+            "relevant_chunk_ids": [
+                14,
+                27
+            ],
+            "precision_at_5": 0.0,
+            "recall_at_5": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question_id": "Q2",
+            "method": "Hybrid",
+            "retrieved_chunk_ids": [
+                0,
+                22,
+                5,
+                24,
+                3
+            ],
+            "relevant_chunk_ids": [
+                14,
+                27
+            ],
+            "precision_at_5": 0.0,
+            "recall_at_5": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question_id": "Q3",
+            "method": "BM25",
+            "retrieved_chunk_ids": [
+                0,
+                9,
+                31,
+                26,
+                32
+            ],
+            "relevant_chunk_ids": [
+                13,
+                14
+            ],
+            "precision_at_5": 0.0,
+            "recall_at_5": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question_id": "Q3",
+            "method": "Semantic",
+            "retrieved_chunk_ids": [
+                14,
+                0,
+                13,
+                1,
+                17
+            ],
+            "relevant_chunk_ids": [
+                13,
+                14
+            ],
+            "precision_at_5": 0.4,
+            "recall_at_5": 1.0,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q3",
+            "method": "Hybrid",
+            "retrieved_chunk_ids": [
+                0,
+                27,
+                29,
+                26,
+                6
+            ],
+            "relevant_chunk_ids": [
+                13,
+                14
+            ],
+            "precision_at_5": 0.0,
+            "recall_at_5": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question_id": "Q4",
+            "method": "BM25",
+            "retrieved_chunk_ids": [
+                0,
+                31,
+                26,
+                32,
+                9
+            ],
+            "relevant_chunk_ids": [
+                13
+            ],
+            "precision_at_5": 0.0,
+            "recall_at_5": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question_id": "Q4",
+            "method": "Semantic",
+            "retrieved_chunk_ids": [
+                13,
+                16,
+                17,
+                1,
+                0
+            ],
+            "relevant_chunk_ids": [
+                13
+            ],
+            "precision_at_5": 0.2,
+            "recall_at_5": 1.0,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q4",
+            "method": "Hybrid",
+            "retrieved_chunk_ids": [
+                0,
+                17,
+                25,
+                27,
+                19
+            ],
+            "relevant_chunk_ids": [
+                13
+            ],
+            "precision_at_5": 0.0,
+            "recall_at_5": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question_id": "Q5",
+            "method": "BM25",
+            "retrieved_chunk_ids": [
+                9,
+                0,
+                29,
+                31,
+                26
+            ],
+            "relevant_chunk_ids": [
+                9,
+                29,
+                30,
+                31,
+                32
+            ],
+            "precision_at_5": 0.6,
+            "recall_at_5": 0.6,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q5",
+            "method": "Semantic",
+            "retrieved_chunk_ids": [
+                9,
+                30,
+                11,
+                8,
+                29
+            ],
+            "relevant_chunk_ids": [
+                9,
+                29,
+                30,
+                31,
+                32
+            ],
+            "precision_at_5": 0.6,
+            "recall_at_5": 0.6,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q5",
+            "method": "Hybrid",
+            "retrieved_chunk_ids": [
+                9,
+                30,
+                29,
+                8,
+                32
+            ],
+            "relevant_chunk_ids": [
+                9,
+                29,
+                30,
+                31,
+                32
+            ],
+            "precision_at_5": 0.8,
+            "recall_at_5": 0.8,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q6",
+            "method": "BM25",
+            "retrieved_chunk_ids": [
+                0,
+                31,
+                32,
+                12,
+                15
+            ],
+            "relevant_chunk_ids": [
+                5,
+                6,
+                12
+            ],
+            "precision_at_5": 0.2,
+            "recall_at_5": 0.3333333333333333,
+            "reciprocal_rank": 0.25
+        },
+        {
+            "question_id": "Q6",
+            "method": "Semantic",
+            "retrieved_chunk_ids": [
+                12,
+                6,
+                5,
+                15,
+                9
+            ],
+            "relevant_chunk_ids": [
+                5,
+                6,
+                12
+            ],
+            "precision_at_5": 0.6,
+            "recall_at_5": 1.0,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q6",
+            "method": "Hybrid",
+            "retrieved_chunk_ids": [
+                12,
+                15,
+                0,
+                9,
+                16
+            ],
+            "relevant_chunk_ids": [
+                5,
+                6,
+                12
+            ],
+            "precision_at_5": 0.2,
+            "recall_at_5": 0.3333333333333333,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q7",
+            "method": "BM25",
+            "retrieved_chunk_ids": [
+                0,
+                26,
+                22,
+                31,
+                9
+            ],
+            "relevant_chunk_ids": [
+                1,
+                28
+            ],
+            "precision_at_5": 0.0,
+            "recall_at_5": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question_id": "Q7",
+            "method": "Semantic",
+            "retrieved_chunk_ids": [
+                0,
+                1,
+                29,
+                2,
+                6
+            ],
+            "relevant_chunk_ids": [
+                1,
+                28
+            ],
+            "precision_at_5": 0.2,
+            "recall_at_5": 0.5,
+            "reciprocal_rank": 0.5
+        },
+        {
+            "question_id": "Q7",
+            "method": "Hybrid",
+            "retrieved_chunk_ids": [
+                0,
+                2,
+                27,
+                19,
+                1
+            ],
+            "relevant_chunk_ids": [
+                1,
+                28
+            ],
+            "precision_at_5": 0.2,
+            "recall_at_5": 0.5,
+            "reciprocal_rank": 0.2
+        },
+        {
+            "question_id": "Q8",
+            "method": "BM25",
+            "retrieved_chunk_ids": [
+                0,
+                31,
+                26,
+                12,
+                32
+            ],
+            "relevant_chunk_ids": [
+                0,
+                12,
+                14,
+                27
+            ],
+            "precision_at_5": 0.4,
+            "recall_at_5": 0.5,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q8",
+            "method": "Semantic",
+            "retrieved_chunk_ids": [
+                0,
+                5,
+                16,
+                1,
+                14
+            ],
+            "relevant_chunk_ids": [
+                0,
+                12,
+                14,
+                27
+            ],
+            "precision_at_5": 0.4,
+            "recall_at_5": 0.5,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q8",
+            "method": "Hybrid",
+            "retrieved_chunk_ids": [
+                0,
+                16,
+                15,
+                12,
+                27
+            ],
+            "relevant_chunk_ids": [
+                0,
+                12,
+                14,
+                27
+            ],
+            "precision_at_5": 0.6,
+            "recall_at_5": 0.75,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q9",
+            "method": "BM25",
+            "retrieved_chunk_ids": [
+                0,
+                31,
+                26,
+                14,
+                24
+            ],
+            "relevant_chunk_ids": [
+                14
+            ],
+            "precision_at_5": 0.2,
+            "recall_at_5": 1.0,
+            "reciprocal_rank": 0.25
+        },
+        {
+            "question_id": "Q9",
+            "method": "Semantic",
+            "retrieved_chunk_ids": [
+                1,
+                0,
+                6,
+                22,
+                20
+            ],
+            "relevant_chunk_ids": [
+                14
+            ],
+            "precision_at_5": 0.0,
+            "recall_at_5": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question_id": "Q9",
+            "method": "Hybrid",
+            "retrieved_chunk_ids": [
+                0,
+                6,
+                20,
+                5,
+                24
+            ],
+            "relevant_chunk_ids": [
+                14
+            ],
+            "precision_at_5": 0.0,
+            "recall_at_5": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question_id": "Q10",
+            "method": "BM25",
+            "retrieved_chunk_ids": [
+                32,
+                0,
+                31,
+                26,
+                9
+            ],
+            "relevant_chunk_ids": [
+                0,
+                27
+            ],
+            "precision_at_5": 0.2,
+            "recall_at_5": 0.5,
+            "reciprocal_rank": 0.5
+        },
+        {
+            "question_id": "Q10",
+            "method": "Semantic",
+            "retrieved_chunk_ids": [
+                0,
+                10,
+                3,
+                23,
+                24
+            ],
+            "relevant_chunk_ids": [
+                0,
+                27
+            ],
+            "precision_at_5": 0.2,
+            "recall_at_5": 0.5,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question_id": "Q10",
+            "method": "Hybrid",
+            "retrieved_chunk_ids": [
+                0,
+                10,
+                24,
+                11,
+                9
+            ],
+            "relevant_chunk_ids": [
+                0,
+                27
+            ],
+            "precision_at_5": 0.2,
+            "recall_at_5": 0.5,
+            "reciprocal_rank": 1.0
+        }
+    ]
+}

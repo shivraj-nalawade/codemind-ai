@@ -1,4 +1,7 @@
+
 @import "tailwindcss";
+
+/* CodeMind AI - Black and Orange Theme */
 
 :root {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system,
@@ -9,20 +12,21 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  color: #f0ece6;
-  background: #17151d;
+  color: #f5f5f5;
+  background: #111111;
 
-  --cm-bg: #17151d;
-  --cm-sidebar: #211d29;
-  --cm-panel: #26222f;
-  --cm-panel-hover: #302a3a;
-  --cm-border: #393342;
-  --cm-teal: #77b8a8;
-  --cm-lavender: #b5a0e8;
-  --cm-coral: #e58b72;
-  --cm-amber: #e8bd70;
-  --cm-text: #f0ece6;
-  --cm-muted: #aaa4b5;
+  /* Theme colors */
+  --cm-bg: #111111;
+  --cm-sidebar: #191919;
+  --cm-panel: #202020;
+  --cm-panel-hover: #292929;
+  --cm-border: #333333;
+
+  --cm-orange: #ff8a00;
+  --cm-orange-hover: #e87900;
+
+  --cm-text: #f5f5f5;
+  --cm-muted: #a3a3a3;
 }
 
 * {
@@ -40,6 +44,7 @@ body {
   min-height: 100vh;
   margin: 0;
   background: var(--cm-bg);
+  color: var(--cm-text);
 }
 
 button,
@@ -57,13 +62,14 @@ button:disabled {
 }
 
 ::selection {
-  color: #17151d;
-  background: #77b8a8;
+  color: #111111;
+  background: #ff8a00;
 }
 
+/* Scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #51485d #211d29;
+  scrollbar-color: #454545 #191919;
 }
 
 *::-webkit-scrollbar {
@@ -72,14 +78,14 @@ button:disabled {
 }
 
 *::-webkit-scrollbar-track {
-  background: #211d29;
+  background: #191919;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #51485d;
+  background: #454545;
   border-radius: 8px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: #6a5c79;
+  background: #ff8a00;
 }
