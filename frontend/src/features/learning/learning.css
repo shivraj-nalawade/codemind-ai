@@ -1,0 +1,219 @@
+.learning-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #d4d4d4;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.learning-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #404040;
+  border-radius: 9px;
+  background: #111111;
+  color: #f5f5f5;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.learning-input:focus {
+  border-color: #ff8a00;
+  box-shadow: 0 0 0 3px rgb(255 138 0 / 10%);
+}
+
+.learning-primary {
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 9px;
+  background: #ff8a00;
+  color: #111111;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.learning-primary:hover:not(:disabled) {
+  background: #e87900;
+}
+
+.learning-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* ==========================================
+   AI GENERATED LESSON MARKDOWN STYLING
+   ========================================== */
+
+.learning-markdown {
+  color: #d4d4d4;
+  font-size: 16px;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+
+/* Headings */
+
+.learning-markdown h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-top: 28px;
+  margin-bottom: 16px;
+}
+
+.learning-markdown h2 {
+  font-size: 23px;
+  font-weight: 700;
+  color: #ff8a00;
+  margin-top: 32px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #333333;
+}
+
+.learning-markdown h3 {
+  font-size: 19px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.learning-markdown h4 {
+  font-size: 17px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+/* Paragraphs */
+
+.learning-markdown p {
+  margin: 12px 0;
+}
+
+.learning-markdown strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.learning-markdown em {
+  color: #e5e5e5;
+}
+
+/* Lists */
+
+.learning-markdown ul {
+  list-style-type: disc;
+  padding-left: 26px;
+  margin: 16px 0;
+}
+
+.learning-markdown ol {
+  list-style-type: decimal;
+  padding-left: 26px;
+  margin: 16px 0;
+}
+
+.learning-markdown li {
+  margin: 8px 0;
+  padding-left: 4px;
+}
+
+.learning-markdown li::marker {
+  color: #ff8a00;
+}
+
+/* Inline code */
+
+.learning-markdown :not(pre) > code {
+  background: #2b2118;
+  color: #ffb454;
+  border: 1px solid #49301b;
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-family: Consolas, monospace;
+  font-size: 0.9em;
+}
+
+/* Code blocks */
+
+.learning-markdown pre {
+  background: #0d0d0d;
+  border: 1px solid #333333;
+  border-radius: 12px;
+  padding: 22px;
+  margin: 20px 0;
+  overflow-x: auto;
+  line-height: 1.7;
+  white-space: pre;
+}
+
+.learning-markdown pre code {
+  background: transparent;
+  color: #86efac;
+  font-family: Consolas, monospace;
+  font-size: 14px;
+  padding: 0;
+  border: none;
+}
+
+/* Tables */
+
+.learning-markdown table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.learning-markdown th {
+  background: #262626;
+  color: #ff8a00;
+  font-weight: 600;
+  text-align: left;
+}
+
+.learning-markdown th,
+.learning-markdown td {
+  border: 1px solid #383838;
+  padding: 12px 16px;
+}
+
+.learning-markdown tr:nth-child(even) {
+  background: #202020;
+}
+
+/* Notes and quotations */
+
+.learning-markdown blockquote {
+  border-left: 4px solid #ff8a00;
+  background: #ff8a000d;
+  border-radius: 0 8px 8px 0;
+  padding: 12px 18px;
+  margin: 20px 0;
+}
+
+.learning-markdown hr {
+  border: none;
+  border-top: 1px solid #333333;
+  margin: 28px 0;
+}
+
+.learning-markdown a {
+  color: #ff8a00;
+  text-decoration: underline;
+}
+
+.learning-markdown > :first-child {
+  margin-top: 0;
+}
+
+.learning-markdown > :last-child {
+  margin-bottom: 0;
+}
