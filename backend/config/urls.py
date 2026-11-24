@@ -21,4 +21,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("assistant.urls")),
     path("api/repositories/", include("repositories.urls")),
+     # Personalized Learning APIs
+    path("api/learning/", include("learning.api.urls")),
+
 ]

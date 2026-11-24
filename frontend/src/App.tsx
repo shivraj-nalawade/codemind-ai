@@ -1,191 +1,142 @@
-import { useRef, useState } from 'react'
-import type { FormEvent } from 'react'
-
-import type { Message } from './types'
-
+import { useEffect, useState } from 'react'
 import {
-  uploadRepository as uploadRepositoryApi,
-  parseRepository,
-  buildSemanticIndex,
-  askRepository,
-} from './services/repositoryApi'
+  useLocation,
+  useNavigate,
+  Navigate,
+} from 'react-router-dom'
 
-import Sidebar from './components/layout/Sidebar'
-import Header from './components/layout/Header'
-import HistorySidebar from './components/layout/HistorySidebar'
-import WelcomeScreen from './components/chat/WelcomeScreen'
-import MessageList from './components/chat/MessageList'
-import ChatComposer from './components/chat/ChatComposer'
-
-type HistoryItem = {
-  id: string
-  question: string
-}
+import RepositoryWorkspace from './RepositoryWorkspace'
+import LearningPortal from './features/learning/LearningPortal'
 
 export default function App() {
-  const [repositoryId, setRepositoryId] = useState('')
-  const [repositoryName, setRepositoryName] = useState('')
-  const [messages, setMessages] = useState<Message[]>([])
-  const [question, setQuestion] = useState('')
-  const [history, setHistory] = useState<HistoryItem[]>([])
-  const [busy, setBusy] = useState(false)
-  const [status, setStatus] = useState('')
-  const [error, setError] = useState('')
 
-  const fileInput = useRef<HTMLInputElement>(null)
+  const location = useLocation()
+  const navigate = useNavigate()
 
-  // Upload and prepare the repository.
-  async function handleUpload(file?: File) {
-    if (!file) return
+  // Determine the active workspace from the URL.
 
-    if (!file.name.toLowerCase().endsWith('.zip')) {
-      setError('Please select a ZIP file.')
-      return
+  const isLearning =
+    location.pathname === '/learning' ||
+    location.pathname.startsWith('/learning/')
+
+  const isRepository = location.pathname === '/'
+
+  const workspace = isLearning
+    ? 'learning'
+    : 'repository'
+
+  // Keep the learning workspace mounted after opening it.
+
+  const [learningOpened, setLearningOpened] =
+    useState(isLearning)
+
+  useEffect(() => {
+    if (isLearning) {
+      setLearningOpened(true)
     }
+  }, [isLearning])
 
-    setBusy(true)
-    setError('')
-    setStatus('Uploading repository...')
+  // Workspace navigation.
 
-    try {
-      const uploaded = await uploadRepositoryApi(file)
-
-      setRepositoryId(uploaded.repository_id)
-      setRepositoryName(file.name.replace(/\.zip$/i, ''))
-      setMessages([])
-      setHistory([])
-      setQuestion('')
-
-      setStatus('Parsing source files...')
-      await parseRepository(uploaded.repository_id)
-
-      setStatus(
-        'Building semantic index. The first run may take a while...',
-      )
-      await buildSemanticIndex(uploaded.repository_id)
-
-      setStatus(
-        `Ready! ${uploaded.file_count} files were accepted for processing.`,
-      )
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed.')
-      setStatus('')
-    } finally {
-      setBusy(false)
-    }
+  function openRepository() {
+    navigate('/')
   }
 
-  // Send a question to the repository assistant.
-  async function handleAsk(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  function openLearning() {
+    if (isLearning) return
 
-    if (!repositoryId || !question.trim() || busy) return
+    setLearningOpened(true)
+    navigate('/learning')
+  }
 
-    const prompt = question.trim()
+  // Redirect unknown application URLs.
 
-    setQuestion('')
-    setError('')
-
-    // Add the question to recent history.
-    setHistory((current) => [
-      {
-        id: `${Date.now()}-${current.length}`,
-        question: prompt,
-      },
-      ...current,
-    ])
-
-    setMessages((current) => [
-      ...current,
-      { role: 'user', content: prompt },
-    ])
-
-    setBusy(true)
-    setStatus('Searching code and generating an answer...')
-
-    try {
-      const data = await askRepository(repositoryId, prompt)
-
-      setMessages((current) => [
-        ...current,
-        {
-          role: 'assistant',
-          content: data.answer,
-          sources: data.sources ?? [],
-        },
-      ])
-
-      setStatus('')
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Question failed.',
-      )
-      setStatus('')
-    } finally {
-      setBusy(false)
-    }
+  if (!isRepository && !isLearning) {
+    return <Navigate to="/" replace />
   }
 
   return (
-    <main className="flex min-h-screen bg-[#111111] text-[#f5f5f5]">
-      {/* Left sidebar */}
-      <Sidebar
-        repositoryName={repositoryName}
-        repositoryId={repositoryId}
-        busy={busy}
-        onUpload={handleUpload}
-      />
+    <div className="min-h-screen bg-[#111111] text-white">
 
-      {/* Hidden input for the welcome-screen upload button */}
-      <input
-        ref={fileInput}
-        type="file"
-        accept=".zip,application/zip"
-        hidden
-        onChange={(event) => {
-          const file = event.target.files?.[0]
-          void handleUpload(file)
-          event.target.value = ''
-        }}
-      />
+      {/* MAIN NAVIGATION */}
 
-      {/* Main workspace */}
-      <section className="flex min-h-screen min-w-0 flex-1 flex-col">
-        <Header repositoryName={repositoryName} />
+      <nav className="flex flex-wrap items-center
+        justify-between gap-3 border-b border-neutral-800
+        bg-[#191919] px-5 py-3">
 
-        <section className="flex flex-1 flex-col">
-          {messages.length === 0 ? (
-            <WelcomeScreen
-              busy={busy}
-              onUploadClick={() => fileInput.current?.click()}
-              onSuggestion={setQuestion}
-            />
-          ) : (
-            <MessageList
-              messages={messages}
-              busy={busy}
-            />
-          )}
-        </section>
+        <div className="text-lg font-bold">
+          CodeMind<span className="text-orange-500"> AI</span>
+        </div>
 
-        {/* Chat input, status and errors */}
-        <ChatComposer
-          question={question}
-          setQuestion={setQuestion}
-          onSubmit={handleAsk}
-          repositoryReady={Boolean(repositoryId)}
-          busy={busy}
-          status={status}
-          error={error}
-        />
-      </section>
+        <div className="flex flex-wrap gap-2">
 
-      {/* Right history panel */}
-      <HistorySidebar
-        items={history}
-        onSelect={setQuestion}
-        onClear={() => setHistory([])}
-      />
-    </main>
+          {/* REPOSITORY ASSISTANT */}
+
+          <button
+            type="button"
+            onClick={openRepository}
+            aria-current={
+              workspace === 'repository'
+                ? 'page'
+                : undefined
+            }
+            className={`rounded-lg px-4 py-2 text-sm
+              font-medium transition ${
+                workspace === 'repository'
+                  ? 'bg-orange-500 text-black'
+                  : 'text-neutral-400 hover:bg-neutral-800'
+              }`}
+          >
+            Repository Assistant
+          </button>
+
+          {/* PERSONALIZED LEARNING */}
+
+          <button
+            type="button"
+            onClick={openLearning}
+            aria-current={
+              workspace === 'learning'
+                ? 'page'
+                : undefined
+            }
+            className={`rounded-lg px-4 py-2 text-sm
+              font-medium transition ${
+                workspace === 'learning'
+                  ? 'bg-orange-500 text-black'
+                  : 'text-neutral-400 hover:bg-neutral-800'
+              }`}
+          >
+            Personalized Learning
+          </button>
+
+        </div>
+
+      </nav>
+
+      {/* REPOSITORY WORKSPACE */}
+
+      {/* Keep mounted to preserve existing repository
+          state when switching workspaces. */}
+
+      <div hidden={workspace !== 'repository'}>
+
+        <RepositoryWorkspace />
+
+      </div>
+
+      {/* PERSONALIZED LEARNING WORKSPACE */}
+
+      {(learningOpened || isLearning) && (
+
+        <div hidden={workspace !== 'learning'}>
+
+          <LearningPortal />
+
+        </div>
+
+      )}
+
+    </div>
   )
 }

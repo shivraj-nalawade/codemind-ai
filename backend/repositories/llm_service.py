@@ -13,7 +13,7 @@ OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
 MODEL_NAME = "qwen2.5-coder:3b"
 
 MAX_CHUNK_CONTENT = 12000
-DEBUG_LLM = True
+DEBUG_LLM = False
 
 
 # ============================================================
@@ -261,17 +261,18 @@ def _call_ollama(
     """Send a request to the local Ollama model."""
 
     payload = {
-        "model": MODEL_NAME,
-        "stream": False,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        "options": {
-            "temperature": 0.1,
-            "num_predict": num_predict,
-        },
-    }
+    "model": MODEL_NAME,
+    "stream": False,
+    "keep_alive": "15m",
+    "messages": [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ],
+    "options": {
+        "temperature": 0.1,
+        "num_predict": num_predict,
+    },
+}
 
     if json_mode:
         payload["format"] = "json"
@@ -611,9 +612,9 @@ def verify_answer(question, draft_answer, retrieved_chunks):
 
     final_answer = draft_answer.strip()
 
-    final_answer += "\n\n---\n"
-
     if deterministic_problems:
+        final_answer += "\n\n---\n"
+
         final_answer += (
             "**Verification status: NEEDS REVIEW**\n\n"
             "**Issues detected:**\n"
@@ -621,14 +622,6 @@ def verify_answer(question, draft_answer, retrieved_chunks):
 
         final_answer += "\n".join(
             f"- {problem}" for problem in deterministic_problems
-        )
-
-    else:
-        final_answer += (
-            "**Verification status: DETERMINISTIC CHECKS COMPLETED**\n\n"
-            "No configured deterministic issues or invalid citation "
-            "ranges were detected. Semantic verification by a second "
-            "LLM was not performed."
         )
 
     debug_print(
@@ -707,7 +700,7 @@ Return the answer in clear Markdown.
         draft_answer = _call_ollama(
             SYSTEM_PROMPT,
             prompt,
-            num_predict=1800,
+            num_predict=1400,
         )
 
         debug_print(
