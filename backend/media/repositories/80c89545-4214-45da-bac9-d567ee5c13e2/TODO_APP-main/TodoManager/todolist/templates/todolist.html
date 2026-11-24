@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}
+   Todolist Page
+{% endblock title %}
+
+{% block headline %}
+  Welcome to {{page}}
+{% endblock headline %}
+
+{% block content %}
+
+<div class="container">
+
+  <!-- Add Task Card -->
+  <div class="card shadow-lg p-4 mb-4">
+    <h5 class="fw-bold mb-3">Add New Task</h5>
+
+    <form method="post" class="d-flex gap-2">
+      {% csrf_token %}
+      <input type="text" class="form-control" name="task" placeholder="Enter your task..." required>
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i>
+      </button>
+    </form>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Task List -->
+  <div class="row g-3">
+
+    {% for task in all_tasks %}
+
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3 h-100 {% if task.isCompleted %}bg-light{% endif %}">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+          <!-- Task Name -->
+          <div>
+            <h6 class="fw-bold mb-1 
+              {% if task.isCompleted %}text-decoration-line-through text-muted{% endif %}">
+              {{ task.task }}
+            </h6>
+
+            {% if task.isCompleted %}
+              <span class="badge bg-success">Completed</span>
+            {% else %}
+              <span class="badge bg-warning text-dark">Pending</span>
+            {% endif %}
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex gap-2">
+
+            {% if task.isCompleted %}
+              <a href="{% url 'pending_task' task.id %}" class="btn btn-sm btn-secondary">
+                <i class="bi bi-arrow-counterclockwise"></i>
+              </a>
+            {% else %}
+              <a href="{% url 'complete_task' task.id %}" class="btn btn-sm btn-success">
+                <i class="bi bi-check-lg"></i>
+              </a>
+            {% endif %}
+
+            <a href="{% url 'edit_task' task.id %}" class="btn btn-sm btn-warning">
+              <i class="bi bi-pencil"></i>
+            </a>
+
+            <a href="{% url 'delete_task' task.id %}" class="btn btn-sm btn-danger">
+              <i class="bi bi-trash"></i>
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    {% endfor %}
+
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+
+      <li class="page-item">
+        <a class="page-link" href="?page=1">«</a>
+      </li>
+
+      {% if all_tasks.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ all_tasks.previous_page_number }}">Prev</a>
+      </li>
+      {% endif %}
+
+      <li class="page-item active">
+        <a class="page-link">{{ all_tasks.number }}</a>
+      </li>
+
+      {% if all_tasks.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ all_tasks.next_page_number }}">Next</a>
+      </li>
+      {% endif %}
+
+      <li class="page-item">
+        <a class="page-link" href="?page={{ all_tasks.paginator.num_pages }}">»</a>
+      </li>
+
+    </ul>
+  </nav>
+
+</div>
+
+{% endblock content %}

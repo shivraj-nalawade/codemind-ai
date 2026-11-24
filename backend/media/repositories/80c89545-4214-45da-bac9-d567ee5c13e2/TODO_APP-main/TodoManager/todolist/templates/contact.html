@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}
+   AboutPage
+{% endblock title %}
+
+{% block content %}
+<div class="container py-5">
+
+    <!-- Heading -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Contact Us</h1>
+        <p class="text-muted">Reach out to us anytime</p>
+    </div>
+
+    <!-- Contact Boxes -->
+    <div class="row g-4 text-center">
+
+        <!-- Phone -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <div class="fs-1 mb-3">📞</div>
+                    <h5 class="fw-bold">Phone</h5>
+                    <p class="text-muted">+91 9876543210</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <div class="fs-1 mb-3">📧</div>
+                    <h5 class="fw-bold">Email</h5>
+                    <p class="text-muted">example@gmail.com</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <div class="fs-1 mb-3">📍</div>
+                    <h5 class="fw-bold">Address</h5>
+                    <p class="text-muted">Pune, Maharashtra, India</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock content %}

@@ -1,0 +1,159 @@
+{
+  "repository_id": "b9ec47e2-5aee-4b7a-9feb-8a1a8f2dbb2e",
+  "files": [
+    "TODO_APP-main/README.md",
+    "TODO_APP-main/TodoManager/TodoManager/__init__.py",
+    "TODO_APP-main/TodoManager/TodoManager/asgi.py",
+    "TODO_APP-main/TodoManager/TodoManager/settings.py",
+    "TODO_APP-main/TodoManager/TodoManager/urls.py",
+    "TODO_APP-main/TodoManager/TodoManager/wsgi.py",
+    "TODO_APP-main/TodoManager/manage.py",
+    "TODO_APP-main/TodoManager/templates/base.html",
+    "TODO_APP-main/TodoManager/todolist/__init__.py",
+    "TODO_APP-main/TodoManager/todolist/admin.py",
+    "TODO_APP-main/TodoManager/todolist/apps.py",
+    "TODO_APP-main/TodoManager/todolist/forms.py",
+    "TODO_APP-main/TodoManager/todolist/migrations/0001_initial.py",
+    "TODO_APP-main/TodoManager/todolist/migrations/0002_alter_task_iscompleted.py",
+    "TODO_APP-main/TodoManager/todolist/migrations/__init__.py",
+    "TODO_APP-main/TodoManager/todolist/models.py",
+    "TODO_APP-main/TodoManager/todolist/templates/about.html",
+    "TODO_APP-main/TodoManager/todolist/templates/contact.html",
+    "TODO_APP-main/TodoManager/todolist/templates/edit.html",
+    "TODO_APP-main/TodoManager/todolist/templates/main.html",
+    "TODO_APP-main/TodoManager/todolist/templates/todolist.html",
+    "TODO_APP-main/TodoManager/todolist/tests.py",
+    "TODO_APP-main/TodoManager/todolist/urls.py",
+    "TODO_APP-main/TodoManager/todolist/views.py",
+    "TODO_APP-main/TodoManager/users/__init__.py",
+    "TODO_APP-main/TodoManager/users/admin.py",
+    "TODO_APP-main/TodoManager/users/apps.py",
+    "TODO_APP-main/TodoManager/users/forms.py",
+    "TODO_APP-main/TodoManager/users/migrations/__init__.py",
+    "TODO_APP-main/TodoManager/users/models.py",
+    "TODO_APP-main/TodoManager/users/templates/login.html",
+    "TODO_APP-main/TodoManager/users/templates/logout.html",
+    "TODO_APP-main/TodoManager/users/templates/register.html",
+    "TODO_APP-main/TodoManager/users/tests.py",
+    "TODO_APP-main/TodoManager/users/urls.py",
+    "TODO_APP-main/TodoManager/users/views.py"
+  ],
+  "skipped_files": [
+    {
+      "path": "TODO_APP-main/.gitignore",
+      "reason": "Unsupported file type"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/TodoManager/__pycache__/__init__.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/TodoManager/__pycache__/settings.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/TodoManager/__pycache__/urls.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/TodoManager/__pycache__/wsgi.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/build.sh",
+      "reason": "Unsupported file type"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/db.sqlite3",
+      "reason": "Unsupported file type"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/static/image/Todo.png",
+      "reason": "Unsupported file type"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/static/image/notes.png",
+      "reason": "Unsupported file type"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/todolist/__pycache__/__init__.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/todolist/__pycache__/admin.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/todolist/__pycache__/apps.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/todolist/__pycache__/forms.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/todolist/__pycache__/models.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/todolist/__pycache__/urls.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/todolist/__pycache__/views.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/todolist/migrations/__pycache__/0001_initial.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/todolist/migrations/__pycache__/0002_alter_task_iscompleted.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/todolist/migrations/__pycache__/__init__.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/users/__pycache__/__init__.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/users/__pycache__/admin.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/users/__pycache__/apps.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/users/__pycache__/forms.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/users/__pycache__/models.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/users/__pycache__/urls.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/users/__pycache__/views.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/users/migrations/__pycache__/__init__.cpython-312.pyc",
+      "reason": "Ignored folder or sensitive filename"
+    },
+    {
+      "path": "TODO_APP-main/TodoManager/requirements.txt",
+      "reason": "File is not valid UTF-8 text"
+    },
+    {
+      "path": "TODO_APP-main/requirements.txt",
+      "reason": "File is not valid UTF-8 text"
+    }
+  ]
+}

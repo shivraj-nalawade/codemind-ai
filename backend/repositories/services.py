@@ -2,6 +2,7 @@
 import json
 import uuid
 import zipfile
+import shutil
 
 from pathlib import Path, PurePosixPath
 
@@ -9,10 +10,11 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 
 
-MAX_ARCHIVE_SIZE = 10 * 1024 * 1024  # 10 MB
-MAX_TOTAL_UNCOMPRESSED = 30 * 1024 * 1024  # 30 MB
-MAX_FILES = 500
-MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MB per file
+# Repository upload limits
+MAX_ARCHIVE_SIZE = 50 * 1024 * 1024  # 50 MB
+MAX_TOTAL_UNCOMPRESSED = 200 * 1024 * 1024  # 200 MB
+MAX_FILES = 1000
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB per file
 
 ALLOWED_EXTENSIONS = {
     ".py", ".js", ".jsx", ".ts", ".tsx",
@@ -33,7 +35,9 @@ SENSITIVE_NAMES = {
 
 def safe_extract_repository(uploaded_file):
     if uploaded_file.size > MAX_ARCHIVE_SIZE:
-        raise ValidationError("ZIP file must be 10 MB or smaller.")
+        raise ValidationError(
+            "ZIP file must be 50 MB or smaller."
+        )
 
     repository_id = str(uuid.uuid4())
 
@@ -51,9 +55,11 @@ def safe_extract_repository(uploaded_file):
             entries = archive.infolist()
 
             if len(entries) > MAX_FILES:
-                raise ValidationError("ZIP contains too many entries.")
+                raise ValidationError(
+                    "ZIP contains too many entries. Maximum allowed: 1000."
+                )
 
-            # Validate all entries before extracting any content.
+            # Validate all entries before extracting content.
             for entry in entries:
                 path = PurePosixPath(entry.filename)
 
@@ -68,6 +74,7 @@ def safe_extract_repository(uploaded_file):
                     )
 
                 unix_mode = (entry.external_attr >> 16) & 0o170000
+
                 if unix_mode == 0o120000:
                     raise ValidationError(
                         "Symbolic links are not permitted."
@@ -87,24 +94,28 @@ def safe_extract_repository(uploaded_file):
                     raise ValidationError(
                         "ZIP contains duplicate file paths."
                     )
+
                 seen_paths.add(relative_path)
 
                 if entry.file_size > MAX_FILE_SIZE:
                     skipped_files.append({
                         "path": relative_path,
-                        "reason": "File exceeds 2 MB limit",
+                        "reason": "File exceeds 5 MB limit",
                     })
                     continue
 
                 total_size += entry.file_size
+
                 if total_size > MAX_TOTAL_UNCOMPRESSED:
                     raise ValidationError(
-                        "Extracted content would exceed 30 MB."
+                        "Extracted content would exceed 200 MB."
                     )
 
                 if (
-                    any(part.lower() in IGNORED_PARTS
-                        for part in path.parts)
+                    any(
+                        part.lower() in IGNORED_PARTS
+                        for part in path.parts
+                    )
                     or path.name.lower() in SENSITIVE_NAMES
                     or path.name.lower().startswith(".env")
                 ):
@@ -128,7 +139,8 @@ def safe_extract_repository(uploaded_file):
                     "No supported source or text files were found."
                 )
 
-            # Read individual accepted files. Never call extractall().
+            # Extract accepted files individually.
+            # Never use extractall().
             for relative_path in accepted_files:
                 info = next(
                     item for item in entries
@@ -137,26 +149,36 @@ def safe_extract_repository(uploaded_file):
                 )
 
                 destination = (
-                    repository_dir / Path(*PurePosixPath(relative_path).parts)
+                    repository_dir
+                    / Path(*PurePosixPath(relative_path).parts)
                 ).resolve()
 
                 if not destination.is_relative_to(repository_dir):
-                    raise ValidationError("Unsafe destination path.")
+                    raise ValidationError(
+                        "Unsafe destination path."
+                    )
 
-                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.parent.mkdir(
+                    parents=True,
+                    exist_ok=True,
+                )
 
                 with archive.open(info) as source:
                     with destination.open("xb") as target:
                         while True:
                             block = source.read(64 * 1024)
+
                             if not block:
                                 break
+
                             target.write(block)
 
                 try:
                     destination.read_text(encoding="utf-8")
+
                 except UnicodeDecodeError:
                     destination.unlink(missing_ok=True)
+
                     skipped_files.append({
                         "path": relative_path,
                         "reason": "File is not valid UTF-8 text",
@@ -164,7 +186,10 @@ def safe_extract_repository(uploaded_file):
 
             accepted_files = [
                 path for path in accepted_files
-                if (repository_dir / Path(*PurePosixPath(path).parts)).is_file()
+                if (
+                    repository_dir
+                    / Path(*PurePosixPath(path).parts)
+                ).is_file()
             ]
 
             metadata = {
@@ -181,13 +206,12 @@ def safe_extract_repository(uploaded_file):
         return metadata
 
     except (zipfile.BadZipFile, OSError, RuntimeError, ValueError) as exc:
-        import shutil
         shutil.rmtree(repository_dir, ignore_errors=True)
+
         raise ValidationError(
             "Could not process this ZIP file safely."
         ) from exc
 
     except Exception:
-        import shutil
         shutil.rmtree(repository_dir, ignore_errors=True)
         raise

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prediction Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="result-page">
+
+<div class="glass-card result-card">
+
+    <h2>🌾 Recommended Crop</h2>
+
+    <p class="result">{{ crop.upper() }}</p>
+
+    <img src="{{ url_for('static', filename='crops/' + image_file) }}" 
+         alt="{{ crop }}" class="crop-image">
+
+    <div class="actions">
+        <a href="/index" class="btn-primary">Predict Again</a>
+        <a href="/" class="btn-secondary">Home</a>
+    </div>
+
+</div>
+
+</body>
+</html>

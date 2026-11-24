@@ -1,0 +1,562 @@
+[
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_11",
+    "start_line": 11,
+    "end_line": 16,
+    "content": "try:\n    import joblib\nexcept Exception:\n    import streamlit as st\n    st.error(\"Required package 'joblib' not installed. Add it to requirements.txt and redeploy.\")\n    st.stop()",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_19",
+    "start_line": 19,
+    "end_line": 19,
+    "content": "st.set_page_config(page_title=\"Disease Predictor\", layout=\"wide\", initial_sidebar_state=\"expanded\")",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_21",
+    "start_line": 21,
+    "end_line": 46,
+    "content": "st.markdown(\"\"\"\n<style>\n/* Expand label height for all selectboxes, number inputs, multiselects */\ndiv[data-baseweb=\"select\"] label,\ndiv[data-baseweb=\"input\"] label,\ndiv[data-baseweb=\"textarea\"] label,\n.stSelectbox label,\n.stNumberInput label,\n.stMultiSelect label {\n    white-space: normal !important;\n    height: auto !important;\n    line-height: 1.3 !important;\n    overflow: visible !important;\n    padding-bottom: 6px !important;\n    display: block !important;\n}\n\n/* Fix parent container clipping */\ndiv[data-baseweb=\"select\"],\ndiv[data-baseweb=\"input\"],\ndiv[data-baseweb=\"textarea\"],\n.stSelectbox, .stNumberInput, .stMultiSelect {\n    overflow: visible !important;\n}\n</style>\n\"\"\", unsafe_allow_html=True)",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_49",
+    "start_line": 49,
+    "end_line": 49,
+    "content": "PIPELINE_FILES = [\"disease_prediction_pipeline.pkl\"]",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_50",
+    "start_line": 50,
+    "end_line": 50,
+    "content": "ENCODER_FILES = [\"le_prognosis.pkl\"]",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_51",
+    "start_line": 51,
+    "end_line": 51,
+    "content": "CSS_FILE = \"style.css\"",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_52",
+    "start_line": 52,
+    "end_line": 52,
+    "content": "BG_FILE = \"background.png\"   ",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "function",
+    "name": "inject_css_with_background",
+    "start_line": 55,
+    "end_line": 167,
+    "content": "def inject_css_with_background(css_path=CSS_FILE, bg_path=BG_FILE):\n    \"\"\"\n    Inject CSS into the page and embed background image as base64 data URI.\n    This function writes styles for both body::before and Streamlit app container to\n    maximize compatibility across Streamlit versions and deployments.\n    \"\"\"\n    default_css = r\"\"\"\n    :root{\n      --card-bg: rgba(18,20,22,0.6);\n      --card-elev: 0 6px 20px rgba(2,6,23,0.6);\n      --accent: #2b8cbe;\n      --muted: #98a3ab;\n    }\n\n    /* body fallback - blurred background image */\n    body::before {\n      content: \"\";\n      position: fixed;\n      inset: 0;\n      z-index: -2;\n      background-image: url(\"{BG_DATA_URI}\");\n      background-size: cover;\n      background-position: center;\n      filter: blur(2px) saturate(0.95);\n      transform: scale(1.02);\n      opacity: 0.65;\n    }\n    /* dark overlay for readability */\n    body::after {\n      content: \"\";\n      position: fixed;\n      inset: 0;\n      z-index: -1;\n      background: linear-gradient(180deg, rgba(6,10,13,0.65), rgba(6,10,13,0.65));\n    }\n\n    /* also set background on Streamlit app container for compatibility */\n    [data-testid=\"stAppViewContainer\"] {\n      background-image: url(\"{BG_DATA_URI}\") !important;\n      background-size: cover !important;\n      background-position: center !important;\n      background-repeat: no-repeat !important;\n      background-attachment: fixed !important;\n    }\n    [data-testid=\"stAppViewContainer\"]::before {\n      content: \"\";\n      position: absolute;\n      inset: 0;\n      z-index: -1;\n      background: linear-gradient(180deg, rgba(6,10,13,0.45), rgba(6,10,13,0.45));\n    }\n\n    .block-container { padding: 1.25rem 2rem; color: #e8eef5; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }\n    .center-header { text-align: center; margin-bottom: 0.6rem; }\n    .center-header h1 { font-size: 2.4rem; margin: 0; letter-spacing: -0.5px; }\n    .center-header p { color: var(--muted); margin-top: 6px; }\n    .card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius: 12px; padding: 18px; box-shadow: var(--card-elev); border: 1px solid rgba(255,255,255,0.03); margin-bottom: 12px; }\n    .stButton>button { border-radius: 10px; padding: 8px 14px; background: linear-gradient(180deg, var(--accent), #1f6c95); color: white; border: none; }\n    .stTable td, .stTable th, .stDataFrame td, .stDataFrame th { padding: 8px 10px; border-color: rgba(255,255,255,0.04); }\n    .small-muted { color: var(--muted); font-size: 0.95rem; }\n    @media (max-width: 800px) { .center-header h1 { font-size: 1.8rem; } .block-container { padding: 1rem; } }\n    \"\"\"\n\n   \n    bg_uri = \"\"\n    bg_found = False\n    if os.path.exists(bg_path):\n        try:\n            with open(bg_path, \"rb\") as f:\n                im_bytes = f.read()\n            # detect mime\n            if bg_path.lower().endswith(\".png\"):\n                mime = \"image/png\"\n            elif bg_path.lower().endswith(\".webp\"):\n                mime = \"image/webp\"\n            else:\n                mime = \"image/jpeg\"\n            bg_b64 = base64.b64encode(im_bytes).decode(\"utf-8\")\n            bg_uri = f\"data:{mime};base64,{bg_b64}\"\n            bg_found = True\n        except Exception as e:\n            st.sidebar.warning(f\"Could not embed background image: {e}\")\n            bg_uri = \"\"\n            bg_found = False\n    else:\n        # file not found\n        bg_uri = \"\"\n        bg_found = False\n\n    # Read user-provided CSS if exists; otherwise use default_css\n    css_text = default_css\n    css_found = False\n    if os.path.exists(css_path):\n        try:\n            with open(css_path, \"r\", encoding=\"utf-8\") as f:\n                css_text = f.read()\n            css_found = True\n        except Exception as e:\n            st.sidebar.warning(f\"Failed to read {css_path}. Using built-in styles. Error: {e}\")\n            css_found = False\n\n    # Replace placeholder\n    css_text = css_text.replace(\"{BG_DATA_URI}\", bg_uri)\n\n    # Inject CSS\n    st.markdown(f\"<style>{css_text}</style>\", unsafe_allow_html=True)\n\n    # Provide debug info in sidebar\n    st.sidebar.markdown(\"### Theme / assets\")\n    st.sidebar.write(f\"styles.css present: {'Yes' if css_found else 'No'}\")\n    st.sidebar.write(f\"{bg_path} present: {'Yes' if bg_found else 'No'}\")\n    if not bg_found:\n        st.sidebar.info(\"To show background place an image named 'background.png' (or change BG_FILE) in the app folder and restart the app.\")",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "def inject_css_with_background(css_path=CSS_FILE, bg_path=BG_FILE)",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_170",
+    "start_line": 170,
+    "end_line": 170,
+    "content": "st.markdown(\"\"\"<link href=\"https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap\" rel=\"stylesheet\">\"\"\", unsafe_allow_html=True)",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_171",
+    "start_line": 171,
+    "end_line": 171,
+    "content": "inject_css_with_background()",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "function",
+    "name": "load_artifacts",
+    "start_line": 174,
+    "end_line": 194,
+    "content": "@st.cache_resource\ndef load_artifacts():\n    pipeline_path = None\n    for p in PIPELINE_FILES:\n        if os.path.exists(p):\n            pipeline_path = p\n            break\n    if pipeline_path is None:\n        raise FileNotFoundError(\"Pipeline file not found.\")\n\n    encoder_path = None\n    for e in ENCODER_FILES:\n        if os.path.exists(e):\n            encoder_path = e\n            break\n    if encoder_path is None:\n        raise FileNotFoundError(\"Label encoder not found.\")\n\n    pipe = joblib.load(pipeline_path)\n    le = joblib.load(encoder_path)\n    return pipe, le, pipeline_path, encoder_path",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "def load_artifacts()",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "function",
+    "name": "infer_expected_columns",
+    "start_line": 196,
+    "end_line": 209,
+    "content": "def infer_expected_columns(pipe):\n    try:\n        pre = pipe.named_steps.get(\"preprocessor\", None)\n        if pre is not None:\n            cont = list(pre.transformers_[0][2])\n            passthrough = list(pre.transformers_[1][2])\n            return cont + passthrough\n    except:\n        pass\n\n    if hasattr(pipe, \"feature_names_in_\"):\n        return list(pipe.feature_names_in_)\n\n    return None",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "def infer_expected_columns(pipe)",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "function",
+    "name": "safe_predict",
+    "start_line": 211,
+    "end_line": 224,
+    "content": "def safe_predict(pipe, le, df):\n    try:\n        preds = pipe.predict(df)\n        probs = pipe.predict_proba(df) if hasattr(pipe, \"predict_proba\") else None\n    except:\n        # attempt to reindex using pipeline feature names and retry\n        if hasattr(pipe, \"feature_names_in_\"):\n            df = df.reindex(columns=pipe.feature_names_in_, fill_value=0)\n            preds = pipe.predict(df)\n            probs = pipe.predict_proba(df) if hasattr(pipe, \"predict_proba\") else None\n        else:\n            raise\n\n    return preds, le.inverse_transform(preds), probs",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "def safe_predict(pipe, le, df)",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_227",
+    "start_line": 227,
+    "end_line": 232,
+    "content": "try:\n    pipeline, le_prognosis, pipeline_path, encoder_path = load_artifacts()\n    st.sidebar.success(\"Loaded pipeline & encoder\")\nexcept Exception as e:\n    st.sidebar.error(str(e))\n    st.stop()",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_235",
+    "start_line": 235,
+    "end_line": 235,
+    "content": "expected_cols = infer_expected_columns(pipeline)",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_236",
+    "start_line": 236,
+    "end_line": 238,
+    "content": "if expected_cols is None:\n    st.error(\"Unable to detect feature columns.\")\n    st.stop()",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_241",
+    "start_line": 241,
+    "end_line": 241,
+    "content": "cont_keys = [\"age\", \"temp\", \"humidity\", \"wind\"]",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_242",
+    "start_line": 242,
+    "end_line": 242,
+    "content": "cont_cols = [c for c in expected_cols if any(k in c.lower() for k in cont_keys)]",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_244",
+    "start_line": 244,
+    "end_line": 244,
+    "content": "gender_col = None",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_245",
+    "start_line": 245,
+    "end_line": 246,
+    "content": "if \"Gender\" in expected_cols:\n    gender_col = \"Gender\"",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_248",
+    "start_line": 248,
+    "end_line": 248,
+    "content": "symptom_cols = [c for c in expected_cols if c not in cont_cols and c != gender_col]",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_251",
+    "start_line": 251,
+    "end_line": 252,
+    "content": "if \"selected_symptoms\" not in st.session_state:\n    st.session_state.selected_symptoms = []",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_255",
+    "start_line": 255,
+    "end_line": 255,
+    "content": "st.markdown(\"<div class='center-header'><h1>Disease Prediction</h1><p style='color:var(--muted)'>Predict disease from weather and symptoms</p></div>\", unsafe_allow_html=True)",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_258",
+    "start_line": 258,
+    "end_line": 258,
+    "content": "left, right = st.columns([1, 2])",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_261",
+    "start_line": 261,
+    "end_line": 349,
+    "content": "with left:\n    st.markdown(\"<div class='card'>\", unsafe_allow_html=True)\n    st.subheader(\"Controls\")\n\n    # Gender selection\n    if gender_col:\n        gender_value = st.selectbox(\"Gender\", [\"Female (0)\", \"Male (1)\"])\n        gender_numeric = 0 if \"Female\" in gender_value else 1\n    else:\n        gender_numeric = 0\n\n    st.markdown(\"### Symptom Selection\")\n\n    # --- Helper callbacks (must be defined before widgets that reference them) ---\n    def select_all_cb():\n        # set the multiselect state to all symptoms (allowed inside callback)\n        st.session_state[\"multi_symp\"] = symptom_cols.copy()\n        # ensure checkboxes reflect the selection (they will be created with these keys)\n        for s in symptom_cols:\n            st.session_state[f\"chk_{s}\"] = True\n\n    def clear_all_cb():\n        st.session_state[\"multi_symp\"] = []\n        for s in symptom_cols:\n            st.session_state[f\"chk_{s}\"] = False\n\n    def checkbox_changed(symptom):\n        \"\"\"Called when any symptom checkbox changes. Update multiselect state accordingly.\"\"\"\n        ms = list(st.session_state.get(\"multi_symp\", []))  # current multiselect list\n        chk_key = f\"chk_{symptom}\"\n        checked = bool(st.session_state.get(chk_key, False))\n        if checked and (symptom not in ms):\n            ms.append(symptom)\n        if (not checked) and (symptom in ms):\n            ms.remove(symptom)\n        st.session_state[\"multi_symp\"] = ms\n\n    # Ensure session_state keys exist with sensible defaults to avoid KeyError\n    if \"multi_symp\" not in st.session_state:\n        st.session_state[\"multi_symp\"] = st.session_state.get(\"selected_symptoms\", [])\n\n    # --- 1) Searchable multiselect (TOP) ---\n    # Note: we DO NOT programmatically set st.session_state[\"multi_symp\"] after this widget in main flow.\n    selected = st.multiselect(\n        \"Symptoms (searchable)\",\n        options=symptom_cols,\n        default=st.session_state.get(\"multi_symp\", []),\n        key=\"multi_symp\"\n    )\n    # Keep canonical list synced from the multiselect (user interaction writes into \"multi_symp\")\n    st.session_state[\"selected_symptoms\"] = list(selected)\n\n    st.write(\"\")  # spacing\n\n    # --- 2) Select All / Clear All buttons (use on_click callbacks) ---\n    c1, c2 = st.columns([1, 1])\n    c1.button(\"Select all\", on_click=select_all_cb)\n    c2.button(\"Clear all\", on_click=clear_all_cb)\n\n    st.write(\"\")  # spacing\n\n    # --- 3) Show Checkbox Grid toggle ---\n    show_grid = st.checkbox(\n        \"Show checkbox grid (tick to select)\",\n        value=False,\n        help=\"Tick symptoms in the grid — selections sync with the searchable list.\"\n    )\n\n    # --- 4) Checkbox grid (if enabled) ---\n    if show_grid:\n        cols = st.columns(3)\n        # Render checkboxes. Each checkbox uses on_change to call checkbox_changed(symptom).\n        for i, s in enumerate(symptom_cols):\n            chk_key = f\"chk_{s}\"\n            # checkbox default: prefer explicit stored checkbox value, otherwise check if in multiselect\n            default_val = st.session_state.get(chk_key, (s in st.session_state.get(\"multi_symp\", [])))\n            # create checkbox with on_change pointing to checkbox_changed\n            cols[i % 3].checkbox(\n                s,\n                value=default_val,\n                key=chk_key,\n                on_change=checkbox_changed,\n                args=(s,)\n            )\n        # Note: checkbox_changed updates st.session_state[\"multi_symp\"], which in turn updates the multiselect on rerun.\n        # Also keep canonical list explicit:\n        st.session_state[\"selected_symptoms\"] = list(st.session_state.get(\"multi_symp\", []))\n\n    st.markdown(\"</div>\", unsafe_allow_html=True)",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/app.py",
+    "chunk_type": "module_statement",
+    "name": "module_statement_353",
+    "start_line": 353,
+    "end_line": 459,
+    "content": "with right:\n    st.markdown(\"<div class='card'>\", unsafe_allow_html=True)\n    st.header(\"Patient Input\")\n\n    # Continuous inputs\n    vals = {}\n    if len(cont_cols) == 0:\n        cont_cols = []\n\n    # realistic ranges (tweak if your data uses different units)\n    RANGES = {\n        # key (lowercased) : (min, max, default, step, format)\n        \"age\": (0.0, 120.0, 30.0, 1.0, \"%.0f\"),\n        \"temperature (c)\": (-50.0, 60.0, 37.0, 0.1, \"%.2f\"),\n        \"temp\": (-50.0, 60.0, 37.0, 0.1, \"%.2f\"),\n        \"humidity\": (0.0, 100.0, 50.0, 0.1, \"%.2f\"),\n        \"wind speed (km/h)\": (0.0, 300.0, 10.0, 0.1, \"%.2f\"),\n        \"wind\": (0.0, 300.0, 10.0, 0.1, \"%.2f\"),\n    }\n\n    # Create number inputs (one column per continuous feature)\n    cols_ui = st.columns(max(1, len(cont_cols)))\n    for i, c in enumerate(cont_cols):\n        lookup = c.lower()\n        # use defined range if present, else fallback\n        if lookup in RANGES:\n            lo, hi, default, step, fmt = RANGES[lookup]\n        else:\n            lo, hi, default, step, fmt = (0.0, 1e6, 0.0, 0.1, \"%.2f\")\n\n        with cols_ui[i]:\n            vals[c] = st.number_input(\n                label=c,\n                min_value=lo,\n                max_value=hi,\n                value=default if default is not None else 0.0,\n                step=step,\n                format=fmt,\n                key=f\"cont_{c}\"\n            )\n\n    # Create input row\n    if st.button(\"Predict\", type=\"primary\"):\n        # build row\n        row = {c: 0 for c in expected_cols}\n        for k, v in vals.items():\n            # defensive clamp (server side) to same ranges\n            lk = k.lower()\n            if lk in RANGES:\n                lo, hi, *_ = RANGES[lk]\n                clamped = float(max(min(v, hi), lo))\n            else:\n                # fallback generic clamp (very wide)\n                clamped = float(v)\n\n            row[k] = clamped\n\n        if gender_col:\n            row[gender_col] = gender_numeric\n        for s in symptom_cols:\n            row[s] = 1 if s in st.session_state.selected_symptoms else 0\n\n        # warn user if input(s) were adjusted\n        clamped_msgs = []\n        for k, orig in vals.items():\n            if float(row[k]) != float(orig):\n                clamped_msgs.append(f\"{k}: entered {orig} → used {row[k]}\")\n        if clamped_msgs:\n            st.warning(\"Some inputs were adjusted to realistic ranges:\\n\" + \"\\n\".join(clamped_msgs))\n\n        df = pd.DataFrame([row])\n        preds, labels, probs = safe_predict(pipeline, le_prognosis, df)\n        st.success(f\"Predicted Disease: **{labels[0]}**\")\n\n        if probs is not None:\n            top = np.argsort(probs[0])[::-1][:5]\n            df_top = pd.DataFrame({\n                \"Disease\": le_prognosis.inverse_transform(top),\n                \"Probability\": probs[0][top]\n            })\n\n            # ---- Side-by-side table + chart with matched heights ----\n            df_top = df_top.sort_values(\"Probability\", ascending=False).reset_index(drop=True)\n            chart_height_px = 160 + 40 * len(df_top)\n\n            col_table, col_chart = st.columns([1,1])\n            with col_table:\n                st.subheader(\"Top predictions\")\n                st.dataframe(df_top.style.format({\"Probability\":\"{:.4f}\"}), height=chart_height_px)\n\n            with col_chart:\n                st.subheader(\"Probability Chart\")\n                chart_df = df_top.copy().iloc[::-1]\n                fig, ax = plt.subplots(figsize=(7, 0.4 * len(chart_df) + 1.2))\n                bars = ax.barh(chart_df[\"Disease\"], chart_df[\"Probability\"], color=\"#2b8cbe\")\n                ax.set_xlabel(\"Probability\")\n                ax.set_xlim(0, 1)\n                ax.set_ylabel(\"\")\n                ax.invert_yaxis()\n                for bar in bars:\n                    width = bar.get_width()\n                    ax.text(width + 0.02, bar.get_y() + bar.get_height()/2, f\"{width:.2f}\", va='center', fontsize=10)\n                plt.tight_layout()\n                st.pyplot(fig)\n\n\n    st.markdown(\"</div>\", unsafe_allow_html=True)",
+    "parent_class": null,
+    "parent_function": null,
+    "signature": "",
+    "imports": [
+      "import base64",
+      "import joblib",
+      "import matplotlib.pyplot",
+      "import numpy",
+      "import os",
+      "import pandas",
+      "import streamlit"
+    ]
+  },
+  {
+    "file_path": "Predict-Disease-main/requirements.txt",
+    "chunk_type": "text",
+    "name": "requirements.txt lines 1-8",
+    "start_line": 1,
+    "end_line": 8,
+    "content": "﻿streamlit==1.51.0\nscikit-learn==1.6.1\npandas==2.2.2\nnumpy==2.0.2\njoblib==1.5.2\nmatplotlib==3.10.0\nseaborn==0.13.2\nPillow"
+  },
+  {
+    "file_path": "Predict-Disease-main/style.css",
+    "chunk_type": "text",
+    "name": "style.css lines 1-80",
+    "start_line": 1,
+    "end_line": 80,
+    "content": "/* ======================= styles.css — Ultra Premium Medical UI =======================\n   - Glassmorphism cards\n   - Soft gradients & accents\n   - Smooth animations, hover lifts\n   - Refined typography (Poppins / Inter)\n   - Improved inputs, buttons, tables, sidebar\n   ===================================================================================*/\n\n/* ---------- Theme tokens ---------- */\n:root{\n  --bg-dark: #071428;            /* deep background tint */\n  --panel-glass: rgba(255,255,255,0.04);\n  --panel-border: rgba(255,255,255,0.06);\n  --muted: #b9c7d1;\n  --text: #eaf6fb;\n  --accent-1: #20c0ff;          /* bright cyan */\n  --accent-2: #1272b8;          /* darker blue */\n  --accent-3: #7af0ff;          /* highlight */\n  --glass-strong: rgba(255,255,255,0.06);\n  --glass-weak: rgba(255,255,255,0.02);\n  --shadow-1: 0 8px 30px rgba(2,12,25,0.55);\n  --radius-lg: 14px;\n  --radius-md: 10px;\n}\n\n/* ---------- Background + overlay (BG_DATA_URI replaced by app) ---------- */\nbody::before{\n  content:\"\";\n  position: fixed;\n  inset: 0;\n  z-index: -3;\n  background-image: url(\"{BG_DATA_URI}\");\n  background-size: cover;\n  background-position: center;\n  filter: blur(1px) brightness(1.05) saturate(1.05);\n  transform: scale(1.01);\n  opacity: 0.92;\n}\nbody::after{\n  content:\"\";\n  position: fixed;\n  inset: 0;\n  z-index: -2;\n  background: linear-gradient(180deg, rgba(6,12,20,0.26), rgba(3,10,18,0.64));\n}\n\n/* Also set the Streamlit container (compatibility) */\n[data-testid=\"stAppViewContainer\"]{\n  background-image: url(\"{BG_DATA_URI}\") !important;\n  background-size: cover !important;\n  background-position: center !important;\n  background-repeat: no-repeat !important;\n  background-attachment: fixed !important;\n}\n\n/* ---------- Base layout ---------- */\n.block-container{\n  padding: 1.5rem 2.2rem;\n  color: var(--text);\n  font-family: 'Poppins', 'Inter', system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial;\n  -webkit-font-smoothing: antialiased;\n}\n\n/* ---------- Header ---------- */\n.center-header { text-align: center; margin-bottom: 0.6rem; }\n.center-header h1 {\n  font-size: 2.8rem;\n  margin: 0;\n  color: #ffffff;\n  font-weight: 700;\n  letter-spacing: -0.6px;\n  text-shadow: 0 6px 22px rgba(0,0,0,0.55);\n}\n.center-header p {\n  color: var(--muted);\n  margin-top: 6px;\n  font-size: 1.02rem;\n}\n\n/* ---------- Sidebar (styled) ---------- */"
+  },
+  {
+    "file_path": "Predict-Disease-main/style.css",
+    "chunk_type": "text",
+    "name": "style.css lines 81-160",
+    "start_line": 81,
+    "end_line": 160,
+    "content": "[data-testid=\"stSidebar\"]{\n  background: linear-gradient(180deg, rgba(6,12,20,0.55), rgba(3,10,18,0.7));\n  border-right: 1px solid rgba(255,255,255,0.03);\n}\n[data-testid=\"stSidebar\"] .css-1lcbmhc { padding: 1rem 1rem; } /* small variant containers */\n\n/* ---------- Card / Panel (glassmorphism) ---------- */\n.card {\n  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));\n  border: 1px solid var(--panel-border);\n  border-radius: var(--radius-lg);\n  padding: 18px;\n  box-shadow: var(--shadow-1);\n  backdrop-filter: blur(8px) saturate(1.08);\n  transition: transform .18s ease, box-shadow .18s ease;\n}\n.card:hover{\n  transform: translateY(-6px);\n  box-shadow: 0 18px 60px rgba(2,12,30,0.6);\n}\n\n/* smaller compact card */\n.card-sm { padding: 12px; border-radius: var(--radius-md); }\n\n/* ---------- Buttons (pill + gradient + subtle hover) ---------- */\n.stButton>button{\n  background: linear-gradient(180deg, var(--accent-1), var(--accent-2));\n  color: white;\n  font-weight: 600;\n  border: none;\n  border-radius: 12px;\n  padding: 10px 18px;\n  box-shadow: 0 8px 28px rgba(18,128,200,0.18);\n  transition: transform .14s ease, box-shadow .14s ease;\n}\n.stButton>button:hover{\n  transform: translateY(-3px);\n  box-shadow: 0 14px 36px rgba(18,128,200,0.26);\n}\n\n/* small ghost button style (for secondary actions) */\n.btn-ghost{\n  background: transparent !important;\n  border: 1px solid rgba(255,255,255,0.06) !important;\n  color: var(--text) !important;\n}\n\n/* ---------- Input fields / selects ---------- */\n/* Use dark translucent backgrounds for inputs for contrast */\ndiv[role=\"listbox\"], .stSelectbox > div > div, .stMultiSelect > div, .stTextInput > div, .stNumberInput > div {\n  background: rgba(0,0,0,0.45) !important;\n  border-radius: 10px !important;\n  border: 1px solid rgba(255,255,255,0.04) !important;\n  color: var(--text) !important;\n  padding: 6px 10px !important;\n}\n\n/* placeholder / muted text */\ninput::placeholder, .stSelectbox label, .stNumberInput label {\n  color: var(--muted) !important;\n}\n\n/* increment buttons (number inputs) */\n.stNumberInput button { background: var(--accent-2) !important; color: #fff !important; }\n\n/* ---------- Table styling ---------- */\n.stDataFrame table{\n  background: rgba(255,255,255,0.02);\n  border-radius: 10px;\n  overflow: hidden;\n}\n.stDataFrame thead th{\n  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));\n  color: var(--text);\n  font-weight: 700;\n}\n.stDataFrame tbody td{\n  color: var(--text);\n  padding: 10px 12px;\n  border-bottom: 1px solid rgba(255,255,255,0.02);"
+  },
+  {
+    "file_path": "Predict-Disease-main/style.css",
+    "chunk_type": "text",
+    "name": "style.css lines 161-240",
+    "start_line": 161,
+    "end_line": 240,
+    "content": "}\n\n/* ---------- Charts container ---------- */\n.plotly-graph-div, .stPlotlyChart {\n  border-radius: 10px;\n  padding: 6px;\n}\n\n/* ---------- Tiny helpers ---------- */\n.small-muted { color: var(--muted); font-size: 0.95rem; }\n.kpi {\n  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));\n  padding: 12px;\n  border-radius: 10px;\n  border: 1px solid rgba(255,255,255,0.03);\n  text-align: center;\n}\n\n/* ---------- Responsive tweaks ---------- */\n@media (max-width: 980px){\n  .center-header h1 { font-size: 1.9rem; }\n  .block-container { padding: 1rem; }\n  .card { padding: 12px; }\n}\n\n/* ---------- Micro animations ---------- */\n@keyframes floatIn {\n  from { transform: translateY(6px); opacity: 0; }\n  to   { transform: translateY(0); opacity: 1; }\n}\n.card { animation: floatIn .28s ease both; }\n\n/* =========================\n   ADDITIONS / FIXES (safe)\n   - fix label wrapping & sidebar selectbox clipping\n   - better spacing for labels & number inputs\n   ========================= */\n\n/* Ensure selectbox labels stack and wrap so they never get cut */\n.stSelectbox label,\n.stMultiSelect label,\n.stTextInput label,\n.stNumberInput label {\n  display: block !important;\n  white-space: normal !important;\n  line-height: 1.15 !important;\n  margin-bottom: 0.35rem !important;\n}\n\n/* Make the selectbox container allow overflow and have comfortable min width\n   This prevents the text from being truncated inside narrow streamlit containers */\n.stSelectbox, .stMultiSelect {\n  min-width: 220px !important;\n  overflow: visible !important;\n}\n\n/* Streamlit sometimes wraps the dropdown in an inline flex; ensure the inner token area grows */\n.stMultiSelect > div, .stSelectbox > div {\n  min-height: 42px !important;\n  align-items: center !important;\n}\n\n/* Slightly reduce the padding on the number inputs so the +/- buttons do not push label */\n.stNumberInput > div {\n  padding: 6px 8px !important;\n}\n\n/* Give number input value a stable width so long values don't push controls off-screen */\n.stNumberInput input[type=\"number\"] {\n  min-width: 90px !important;\n}\n\n/* Make sidebar controls flow nicely (avoid clipping in narrow sidebar) */\n[data-testid=\"stSidebar\"] .stSelectbox,\n[data-testid=\"stSidebar\"] .stNumberInput,\n[data-testid=\"stSidebar\"] .stMultiSelect {\n  min-width: 100% !important;\n  box-sizing: border-box !important;\n}\n"
+  },
+  {
+    "file_path": "Predict-Disease-main/style.css",
+    "chunk_type": "text",
+    "name": "style.css lines 241-291",
+    "start_line": 241,
+    "end_line": 291,
+    "content": "/* Small visual: add subtle left padding on labels inside sidebar */\n[data-testid=\"stSidebar\"] label {\n  padding-left: 2px;\n}\n\n/* If the dropdown token area shows a long token, allow it to wrap to multiple lines */\n.stMultiSelect .css-1qi6w8s { /* streamlit internal — safe to include as fallback */\n  white-space: normal !important;\n}\n\n/* Final safety: force full width for block-container child elements to avoid accidental overflow */\n.block-container > div {\n  width: 100% !important;\n  box-sizing: border-box !important;\n}\n\n/* ============================================\n   FINAL FIX FOR CROPPED LABELS (Selectbox/Number)\n   Forces labels to auto-expand height\n   ============================================ */\n\n/* Ensure Streamlit's label wrapper grows to fit text */\n.stSelectbox label,\n.stNumberInput label,\n.stMultiSelect label,\n.stTextInput label {\n    height: auto !important;\n    white-space: normal !important;\n    line-height: 1.3 !important;\n    overflow: visible !important;\n    display: block !important;\n}\n\n/* Override Streamlit's internal container height */\n.css-175i5b5,                    /* generic label class */\n.css-1p3v1b5,                    /* selectbox internal wrapper */\n.css-1n76uvr,                    /* label wrapper in recent Streamlit */\n.css-1uorj75,                    /* number input label wrapper */\n.css-1j4d9dg                     /* fallback for multi-select label */\n{\n    height: auto !important;\n    min-height: 24px !important;\n    overflow: visible !important;\n    display: block !important;\n    white-space: normal !important;\n}\n\n/* Ensure parent container doesn’t clip the label */\n.stSelectbox, .stNumberInput, .stMultiSelect {\n    overflow: visible !important;\n}"
+  }
+]

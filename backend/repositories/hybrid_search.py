@@ -1,6 +1,7 @@
 
 from .retrieval import load_chunks, search_chunks
 from .semantic_search import semantic_search
+from .query_expansion import expand_query
 
 
 def hybrid_search(
@@ -8,27 +9,39 @@ def hybrid_search(
     query,
     top_k=5,
     rrf_k=60,
-    bm25_weight=0.5,
-    semantic_weight=1.5,
+    bm25_weight=1.0,
+    semantic_weight=1.0,
 ):
     """
     Combine BM25 and semantic rankings using
     Weighted Reciprocal Rank Fusion.
+
+    Query expansion enriches the search query
+    while preserving the original user question.
     """
 
     chunks = load_chunks(repository_dir)
 
-    if not chunks or not query.strip():
+    if not chunks or not query or not query.strip():
         return []
+
+    # Expand the query for better retrieval.
+    expanded_query = expand_query(query)
 
     candidate_count = min(len(chunks), 50)
 
+    # BM25 retrieval using expanded query.
     bm25_results = search_chunks(
-        chunks, query, top_k=candidate_count
+        chunks,
+        expanded_query,
+        top_k=candidate_count
     )
 
+    # Semantic retrieval using expanded query.
     semantic_results = semantic_search(
-        repository_dir, query, top_k=candidate_count
+        repository_dir,
+        expanded_query,
+        top_k=candidate_count
     )
 
     def chunk_key(item):

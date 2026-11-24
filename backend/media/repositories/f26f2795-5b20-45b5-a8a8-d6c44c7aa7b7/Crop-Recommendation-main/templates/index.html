@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Predict Crop</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="home-bg">
+
+<div class="glass-card form-card">
+
+    <h2>🌱 Enter Soil & Weather Details</h2>
+
+    {% if error %}
+      <div class="error-box">{{ error }}</div>
+    {% endif %}
+
+
+    <form action="/predict" method="POST">
+
+       <!-- inside your form in index.html -->
+            <div class="input-group">
+            <label>Nitrogen (N)</label>
+            <input type="number" name="N" step="0.1" min="0" max="140" placeholder="0 - 140 (ppm)" required>
+            </div>
+
+            <div class="input-group">
+            <label>Phosphorus (P)</label>
+            <input type="number" name="P" step="0.1" min="5" max="145" placeholder="5 - 145 (ppm)" required>
+            </div>
+
+            <div class="input-group">
+            <label>Potassium (K)</label>
+            <input type="number" name="K" step="0.1" min="5" max="205" placeholder="5 - 205 (ppm)" required>
+            </div>
+
+            <div class="input-group">
+            <label>Temperature (°C)</label>
+            <input type="number" name="temperature" step="0.1" min="-5" max="55" placeholder="-5 - 55 °C" required>
+            </div>
+
+            <div class="input-group">
+            <label>Humidity (%)</label>
+            <input type="number" name="humidity" step="0.1" min="0" max="100" placeholder="0 - 100 %" required>
+            </div>
+
+            <div class="input-group">
+            <label>pH Value</label>
+            <input type="number" name="ph" step="0.01" min="3.0" max="10.0" placeholder="3.0 - 10.0" required>
+            </div>
+
+            <div class="input-group">
+            <label>Rainfall (mm)</label>
+            <input type="number" name="rainfall" step="0.1" min="0" max="350" placeholder="0 - 350 mm" required>
+            </div>
+
+        <button class="btn-primary" type="submit">Predict Crop</button>
+    </form>
+
+    <a href="/" class="btn-secondary">Back to Home</a>
+</div>
+
+</body>
+</html>

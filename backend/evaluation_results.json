@@ -14,9 +14,9 @@
             "mrr": 0.75
         },
         "Hybrid": {
-            "precision": 0.24000000000000005,
-            "recall": 0.3883333333333333,
-            "mrr": 0.52
+            "precision": 0.30000000000000004,
+            "recall": 0.7283333333333333,
+            "mrr": 0.8083333333333332
         }
     },
     "details": [
@@ -62,9 +62,9 @@
             "retrieved_chunk_ids": [
                 12,
                 15,
-                9,
                 16,
-                32
+                14,
+                9
             ],
             "relevant_chunk_ids": [
                 12,
@@ -115,18 +115,18 @@
             "method": "Hybrid",
             "retrieved_chunk_ids": [
                 0,
-                22,
-                5,
-                24,
-                3
+                14,
+                15,
+                27,
+                23
             ],
             "relevant_chunk_ids": [
                 14,
                 27
             ],
-            "precision_at_5": 0.0,
-            "recall_at_5": 0.0,
-            "reciprocal_rank": 0.0
+            "precision_at_5": 0.4,
+            "recall_at_5": 1.0,
+            "reciprocal_rank": 0.5
         },
         {
             "question_id": "Q3",
@@ -168,19 +168,19 @@
             "question_id": "Q3",
             "method": "Hybrid",
             "retrieved_chunk_ids": [
-                0,
+                14,
+                17,
                 27,
-                29,
-                26,
-                6
+                0,
+                13
             ],
             "relevant_chunk_ids": [
                 13,
                 14
             ],
-            "precision_at_5": 0.0,
-            "recall_at_5": 0.0,
-            "reciprocal_rank": 0.0
+            "precision_at_5": 0.4,
+            "recall_at_5": 1.0,
+            "reciprocal_rank": 1.0
         },
         {
             "question_id": "Q4",
@@ -220,18 +220,18 @@
             "question_id": "Q4",
             "method": "Hybrid",
             "retrieved_chunk_ids": [
+                13,
+                27,
                 0,
                 17,
-                25,
-                27,
-                19
+                14
             ],
             "relevant_chunk_ids": [
                 13
             ],
-            "precision_at_5": 0.0,
-            "recall_at_5": 0.0,
-            "reciprocal_rank": 0.0
+            "precision_at_5": 0.2,
+            "recall_at_5": 1.0,
+            "reciprocal_rank": 1.0
         },
         {
             "question_id": "Q5",
@@ -280,10 +280,10 @@
             "method": "Hybrid",
             "retrieved_chunk_ids": [
                 9,
-                30,
-                29,
+                12,
                 8,
-                32
+                7,
+                15
             ],
             "relevant_chunk_ids": [
                 9,
@@ -292,8 +292,8 @@
                 31,
                 32
             ],
-            "precision_at_5": 0.8,
-            "recall_at_5": 0.8,
+            "precision_at_5": 0.2,
+            "recall_at_5": 0.2,
             "reciprocal_rank": 1.0
         },
         {
@@ -395,9 +395,9 @@
             "retrieved_chunk_ids": [
                 0,
                 2,
-                27,
-                19,
-                1
+                1,
+                12,
+                16
             ],
             "relevant_chunk_ids": [
                 1,
@@ -405,7 +405,7 @@
             ],
             "precision_at_5": 0.2,
             "recall_at_5": 0.5,
-            "reciprocal_rank": 0.2
+            "reciprocal_rank": 0.3333333333333333
         },
         {
             "question_id": "Q8",
@@ -452,10 +452,10 @@
             "method": "Hybrid",
             "retrieved_chunk_ids": [
                 0,
-                16,
+                1,
+                14,
                 15,
-                12,
-                27
+                12
             ],
             "relevant_chunk_ids": [
                 0,
@@ -506,17 +506,17 @@
             "method": "Hybrid",
             "retrieved_chunk_ids": [
                 0,
+                24,
                 6,
-                20,
-                5,
-                24
+                14,
+                5
             ],
             "relevant_chunk_ids": [
                 14
             ],
-            "precision_at_5": 0.0,
-            "recall_at_5": 0.0,
-            "reciprocal_rank": 0.0
+            "precision_at_5": 0.2,
+            "recall_at_5": 1.0,
+            "reciprocal_rank": 0.25
         },
         {
             "question_id": "Q10",
@@ -559,10 +559,10 @@
             "method": "Hybrid",
             "retrieved_chunk_ids": [
                 0,
-                10,
+                14,
+                15,
                 24,
-                11,
-                9
+                16
             ],
             "relevant_chunk_ids": [
                 0,
