@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "assistant",
     "repositories",
+    "learning",
 ]
 
 MIDDLEWARE = [

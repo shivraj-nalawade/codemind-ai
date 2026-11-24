@@ -8,3 +8,8 @@ db.sqlite3
 node_modules/
 dist/
 *.faiss
+# Database backups
+db.sqlite3.*
+
+# Uploaded repositories
+backend/media/
