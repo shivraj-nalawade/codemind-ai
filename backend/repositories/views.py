@@ -1,13 +1,12 @@
-
 import json
 import re
+
 from pathlib import Path
 from uuid import UUID
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from .hybrid_search import hybrid_search
@@ -17,10 +16,25 @@ from .retrieval import load_chunks, search_chunks
 from .semantic_search import build_semantic_index, semantic_search
 from .services import safe_extract_repository
 
+from .permissions import (
+    register_repository_access,
+    repository_access_required,
+)
+
+from .rate_limits import (
+    rate_limit,
+    limit_llm_requests,
+    limit_indexing_requests,
+)
+
 
 # Keep this aligned with MAX_CHUNK_CONTENT in llm_service.py.
 MAX_DIRECT_FILE_CHARS = 12000
 
+
+# ==========================================================
+# SPECIFIC FILE EVIDENCE
+# ==========================================================
 
 def get_requested_file_evidence(repository_dir, question):
     """
@@ -66,11 +80,13 @@ def get_requested_file_evidence(repository_dir, question):
     candidates = []
 
     for mention in mentions:
+
         normalized_mention = mention.replace("\\", "/").lower()
 
         matches = []
 
         for relative_path in available_files:
+
             if not isinstance(relative_path, str):
                 continue
 
@@ -134,11 +150,16 @@ def get_requested_file_evidence(repository_dir, question):
     }
 
 
+# ==========================================================
+# PROJECT OVERVIEW QUESTION DETECTION
+# ==========================================================
+
 def is_project_overview_question(question):
     """
     Identify broad questions that need evidence from multiple
     repository areas rather than only the top search results.
     """
+
     text = question.lower()
 
     overview_phrases = [
@@ -153,8 +174,15 @@ def is_project_overview_question(question):
         "overview of the project",
     ]
 
-    return any(phrase in text for phrase in overview_phrases)
+    return any(
+        phrase in text
+        for phrase in overview_phrases
+    )
 
+
+# ==========================================================
+# PROJECT OVERVIEW EVIDENCE
+# ==========================================================
 
 def get_project_overview_evidence(repository_dir):
     """
@@ -194,27 +222,37 @@ def get_project_overview_evidence(repository_dir):
     selected = []
 
     def add_file(relative_path, priority):
+
         if not isinstance(relative_path, str):
             return
 
         normalized = relative_path.replace("\\", "/")
 
-        if normalized.startswith("/") or ".." in Path(normalized).parts:
+        if (
+            normalized.startswith("/")
+            or ".." in Path(normalized).parts
+        ):
             return
 
         selected.append((priority, normalized))
 
     for relative_path in available_files:
+
         if not isinstance(relative_path, str):
             continue
 
         path = Path(relative_path.replace("\\", "/"))
+
         name = path.name.lower()
         suffix = path.suffix.lower()
         parts = [part.lower() for part in path.parts]
 
         # Project documentation
-        if name in {"readme.md", "readme.txt", "readme.rst"}:
+        if name in {
+            "readme.md",
+            "readme.txt",
+            "readme.rst",
+        }:
             add_file(relative_path, 1)
 
         # Dependency declarations
@@ -274,9 +312,20 @@ def get_project_overview_evidence(repository_dir):
 
         # Frontend templates and application pages
         elif (
-            suffix in {".html", ".jsx", ".tsx", ".vue", ".svelte"}
+            suffix in {
+                ".html",
+                ".jsx",
+                ".tsx",
+                ".vue",
+                ".svelte",
+            }
             and any(
-                part in {"templates", "views", "pages", "src"}
+                part in {
+                    "templates",
+                    "views",
+                    "pages",
+                    "src",
+                }
                 for part in parts[:-1]
             )
         ):
@@ -285,13 +334,17 @@ def get_project_overview_evidence(repository_dir):
     # Remove duplicate paths and preserve priority.
     selected = sorted(
         set(selected),
-        key=lambda item: (item[0], item[1].lower()),
+        key=lambda item: (
+            item[0],
+            item[1].lower(),
+        ),
     )
 
     evidence = []
     total_chars = 0
 
     for _, relative_path in selected:
+
         if len(evidence) >= MAX_FILES:
             break
 
@@ -305,26 +358,39 @@ def get_project_overview_evidence(repository_dir):
             continue
 
         try:
-            raw_content = file_path.read_text(encoding="utf-8")
+            raw_content = file_path.read_text(
+                encoding="utf-8"
+            )
         except (OSError, UnicodeError):
             continue
 
         # Convert notebook JSON into readable cell evidence.
         if file_path.suffix.lower() == ".ipynb":
+
             try:
                 notebook = json.loads(raw_content)
+
                 formatted_cells = []
 
                 for cell_number, cell in enumerate(
-                    notebook.get("cells", []), start=1
+                    notebook.get("cells", []),
+                    start=1,
                 ):
-                    cell_type = cell.get("cell_type", "unknown")
+
+                    cell_type = cell.get(
+                        "cell_type",
+                        "unknown",
+                    )
+
                     source = cell.get("source", [])
 
                     if isinstance(source, list):
                         source = "".join(source)
 
-                    if not isinstance(source, str) or not source.strip():
+                    if (
+                        not isinstance(source, str)
+                        or not source.strip()
+                    ):
                         continue
 
                     formatted_cells.append(
@@ -336,6 +402,7 @@ def get_project_overview_evidence(repository_dir):
 
             except (ValueError, TypeError, AttributeError):
                 continue
+
         else:
             content = raw_content
 
@@ -346,13 +413,15 @@ def get_project_overview_evidence(repository_dir):
 
         # Preserve the fact that evidence was truncated.
         if len(content) > MAX_FILE_CHARS:
+
             content = (
                 content[:MAX_FILE_CHARS]
                 + "\n\n[Evidence truncated: file exceeds the "
-                  "per-file evidence limit.]"
+                "per-file evidence limit.]"
             )
 
         if len(content) > remaining:
+
             content = (
                 content[:remaining]
                 + "\n\n[Evidence truncated: total evidence limit reached.]"
@@ -381,26 +450,51 @@ def get_project_overview_evidence(repository_dir):
     return evidence
 
 
+# ==========================================================
+# REPOSITORY UPLOAD
+# ==========================================================
 
-@csrf_exempt  # Local prototype only; secure before deployment.
 @require_POST
+@rate_limit(
+    "upload",
+    max_requests=5,
+    window_seconds=3600,
+)
 def upload_repository(request):
+
     uploaded_file = request.FILES.get("file")
 
     if not uploaded_file:
+
         return JsonResponse(
-            {"error": "Please upload a ZIP file using the 'file' field."},
+            {
+                "error": (
+                    "Please upload a ZIP file using "
+                    "the 'file' field."
+                )
+            },
             status=400,
         )
 
     if not uploaded_file.name.lower().endswith(".zip"):
+
         return JsonResponse(
-            {"error": "Only ZIP files are supported."},
+            {
+                "error": "Only ZIP files are supported."
+            },
             status=400,
         )
 
     try:
+
         result = safe_extract_repository(uploaded_file)
+
+        # Associate the repository with the current anonymous
+        # browser session. No user login is required.
+        register_repository_access(
+            request,
+            result["repository_id"],
+        )
 
         return JsonResponse(
             {
@@ -412,43 +506,77 @@ def upload_repository(request):
         )
 
     except ValidationError as exc:
+
         return JsonResponse(
-            {"error": exc.messages},
+            {
+                "error": exc.messages,
+            },
             status=400,
         )
 
 
-@require_GET
+# ==========================================================
+# REPOSITORY PARSING
+# ==========================================================
+
+@require_POST
+@repository_access_required
+@rate_limit(
+    "parse",
+    max_requests=10,
+    window_seconds=3600,
+)
 def parse_repository_view(request, repository_id):
+
     repository_dir = (
-        Path(settings.MEDIA_ROOT) / "repositories" / str(repository_id)
+        Path(settings.MEDIA_ROOT)
+        / "repositories"
+        / str(repository_id)
     ).resolve()
 
     repositories_root = (
-        Path(settings.MEDIA_ROOT) / "repositories"
+        Path(settings.MEDIA_ROOT)
+        / "repositories"
     ).resolve()
 
     if not repository_dir.is_relative_to(repositories_root):
+
         return JsonResponse(
-            {"error": "Invalid repository ID."},
+            {
+                "error": "Invalid repository ID."
+            },
             status=400,
         )
 
     metadata_path = repository_dir / "metadata.json"
 
-    if not repository_dir.is_dir() or not metadata_path.is_file():
+    if (
+        not repository_dir.is_dir()
+        or not metadata_path.is_file()
+    ):
+
         return JsonResponse(
-            {"error": "Repository not found."},
+            {
+                "error": "Repository not found."
+            },
             status=404,
         )
 
     try:
+
         metadata = json.loads(
             metadata_path.read_text(encoding="utf-8")
         )
 
-        chunks = parse_repository(repository_dir, metadata)
-        save_chunks(repository_dir, chunks)
+        chunks = parse_repository(
+            repository_dir,
+            metadata,
+        )
+
+        save_chunks(
+            repository_dir,
+            chunks,
+        )
 
         return JsonResponse({
             "message": "Repository parsed successfully.",
@@ -458,51 +586,93 @@ def parse_repository_view(request, repository_id):
         })
 
     except (OSError, ValueError, KeyError, TypeError):
+
         return JsonResponse(
-            {"error": "Could not parse this repository."},
+            {
+                "error": "Could not parse this repository."
+            },
             status=500,
         )
 
 
+# ==========================================================
+# BM25 KEYWORD SEARCH
+# ==========================================================
+
 @require_GET
+@repository_access_required
+@rate_limit(
+    "search",
+    max_requests=30,
+    window_seconds=60,
+)
 def search_repository(request, repository_id):
+
     query = request.GET.get("q", "").strip()
 
     if not query:
+
         return JsonResponse(
-            {"error": "Please provide a search query using ?q=..."},
+            {
+                "error": (
+                    "Please provide a search query "
+                    "using ?q=..."
+                )
+            },
             status=400,
         )
 
     if len(query) > 500:
+
         return JsonResponse(
-            {"error": "Search query must be 500 characters or fewer."},
+            {
+                "error": (
+                    "Search query must be "
+                    "500 characters or fewer."
+                )
+            },
             status=400,
         )
 
     try:
-        top_k = int(request.GET.get("top_k", "5"))
+
+        top_k = int(
+            request.GET.get("top_k", "5")
+        )
+
     except ValueError:
+
         return JsonResponse(
-            {"error": "top_k must be an integer."},
+            {
+                "error": "top_k must be an integer."
+            },
             status=400,
         )
 
     if not 1 <= top_k <= 10:
+
         return JsonResponse(
-            {"error": "top_k must be between 1 and 10."},
+            {
+                "error": "top_k must be between 1 and 10."
+            },
             status=400,
         )
 
     repositories_root = (
-        Path(settings.MEDIA_ROOT) / "repositories"
+        Path(settings.MEDIA_ROOT)
+        / "repositories"
     ).resolve()
 
     try:
+
         safe_id = UUID(str(repository_id))
+
     except ValueError:
+
         return JsonResponse(
-            {"error": "Invalid repository ID."},
+            {
+                "error": "Invalid repository ID."
+            },
             status=400,
         )
 
@@ -511,27 +681,39 @@ def search_repository(request, repository_id):
     ).resolve()
 
     if not repository_dir.is_relative_to(repositories_root):
+
         return JsonResponse(
-            {"error": "Invalid repository ID."},
+            {
+                "error": "Invalid repository ID."
+            },
             status=400,
         )
 
     metadata_path = repository_dir / "metadata.json"
 
-    if not repository_dir.is_dir() or not metadata_path.is_file():
+    if (
+        not repository_dir.is_dir()
+        or not metadata_path.is_file()
+    ):
+
         return JsonResponse(
-            {"error": "Repository not found."},
+            {
+                "error": "Repository not found."
+            },
             status=404,
         )
 
     try:
+
         chunks = load_chunks(repository_dir)
-        results = search_chunks(chunks, query, top_k)
 
-        index_path = repository_dir / "semantic_index.npz"
+        results = search_chunks(
+            chunks,
+            query,
+            top_k,
+        )
 
-        if index_path.exists():
-            index_path.unlink()
+        # Do not delete the semantic index during BM25 search.
 
         return JsonResponse({
             "repository_id": str(safe_id),
@@ -541,30 +723,55 @@ def search_repository(request, repository_id):
         })
 
     except FileNotFoundError:
+
         return JsonResponse(
-            {"error": "Repository has not been parsed yet."},
+            {
+                "error": (
+                    "Repository has not been parsed yet."
+                )
+            },
             status=409,
         )
 
     except (OSError, ValueError, TypeError):
+
         return JsonResponse(
-            {"error": "Could not search this repository."},
+            {
+                "error": "Could not search this repository."
+            },
             status=500,
         )
 
 
-@csrf_exempt
+# ==========================================================
+# SEMANTIC INDEX GENERATION
+# ==========================================================
+
 @require_POST
+@repository_access_required
+@rate_limit(
+    "semantic_index",
+    max_requests=10,
+    window_seconds=3600,
+)
+@limit_indexing_requests
 def build_semantic_index_view(request, repository_id):
+
     repositories_root = (
-        Path(settings.MEDIA_ROOT) / "repositories"
+        Path(settings.MEDIA_ROOT)
+        / "repositories"
     ).resolve()
 
     try:
+
         safe_id = UUID(str(repository_id))
+
     except ValueError:
+
         return JsonResponse(
-            {"error": "Invalid repository ID."},
+            {
+                "error": "Invalid repository ID."
+            },
             status=400,
         )
 
@@ -573,18 +780,25 @@ def build_semantic_index_view(request, repository_id):
     ).resolve()
 
     if not repository_dir.is_relative_to(repositories_root):
+
         return JsonResponse(
-            {"error": "Invalid repository ID."},
+            {
+                "error": "Invalid repository ID."
+            },
             status=400,
         )
 
     if not (repository_dir / "metadata.json").is_file():
+
         return JsonResponse(
-            {"error": "Repository not found."},
+            {
+                "error": "Repository not found."
+            },
             status=404,
         )
 
     try:
+
         result = build_semantic_index(repository_dir)
 
         return JsonResponse({
@@ -594,57 +808,100 @@ def build_semantic_index_view(request, repository_id):
         })
 
     except FileNotFoundError as exc:
+
         return JsonResponse(
-            {"error": str(exc)},
+            {
+                "error": str(exc)
+            },
             status=409,
         )
 
     except (OSError, ValueError, RuntimeError):
+
         return JsonResponse(
-            {"error": "Could not build the semantic index."},
+            {
+                "error": (
+                    "Could not build the semantic index."
+                )
+            },
             status=500,
         )
 
 
+# ==========================================================
+# SEMANTIC SEARCH
+# ==========================================================
+
 @require_GET
+@repository_access_required
+@rate_limit(
+    "semantic_search",
+    max_requests=30,
+    window_seconds=60,
+)
 def semantic_search_view(request, repository_id):
+
     query = request.GET.get("q", "").strip()
 
     if not query:
+
         return JsonResponse(
-            {"error": "Provide a query using ?q=..."},
+            {
+                "error": "Provide a query using ?q=..."
+            },
             status=400,
         )
 
     if len(query) > 500:
+
         return JsonResponse(
-            {"error": "Query must be 500 characters or fewer."},
+            {
+                "error": (
+                    "Query must be 500 characters or fewer."
+                )
+            },
             status=400,
         )
 
     try:
-        top_k = int(request.GET.get("top_k", "5"))
+
+        top_k = int(
+            request.GET.get("top_k", "5")
+        )
+
     except ValueError:
+
         return JsonResponse(
-            {"error": "top_k must be an integer."},
+            {
+                "error": "top_k must be an integer."
+            },
             status=400,
         )
 
     if not 1 <= top_k <= 10:
+
         return JsonResponse(
-            {"error": "top_k must be between 1 and 10."},
+            {
+                "error": "top_k must be between 1 and 10."
+            },
             status=400,
         )
 
     repositories_root = (
-        Path(settings.MEDIA_ROOT) / "repositories"
+        Path(settings.MEDIA_ROOT)
+        / "repositories"
     ).resolve()
 
     try:
+
         safe_id = UUID(str(repository_id))
+
     except ValueError:
+
         return JsonResponse(
-            {"error": "Invalid repository ID."},
+            {
+                "error": "Invalid repository ID."
+            },
             status=400,
         )
 
@@ -653,19 +910,30 @@ def semantic_search_view(request, repository_id):
     ).resolve()
 
     if not repository_dir.is_relative_to(repositories_root):
+
         return JsonResponse(
-            {"error": "Invalid repository ID."},
+            {
+                "error": "Invalid repository ID."
+            },
             status=400,
         )
 
     if not (repository_dir / "metadata.json").is_file():
+
         return JsonResponse(
-            {"error": "Repository not found."},
+            {
+                "error": "Repository not found."
+            },
             status=404,
         )
 
     try:
-        results = semantic_search(repository_dir, query, top_k)
+
+        results = semantic_search(
+            repository_dir,
+            query,
+            top_k,
+        )
 
         return JsonResponse({
             "repository_id": str(safe_id),
@@ -675,57 +943,98 @@ def semantic_search_view(request, repository_id):
         })
 
     except FileNotFoundError as exc:
+
         return JsonResponse(
-            {"error": str(exc)},
+            {
+                "error": str(exc)
+            },
             status=409,
         )
 
     except (OSError, ValueError, RuntimeError):
+
         return JsonResponse(
-            {"error": "Could not run semantic search."},
+            {
+                "error": "Could not run semantic search."
+            },
             status=500,
         )
 
 
+# ==========================================================
+# HYBRID SEARCH
+# ==========================================================
+
 @require_GET
+@repository_access_required
+@rate_limit(
+    "hybrid_search",
+    max_requests=30,
+    window_seconds=60,
+)
 def hybrid_search_view(request, repository_id):
+
     query = request.GET.get("q", "").strip()
 
     if not query:
+
         return JsonResponse(
-            {"error": "Provide a query using ?q=..."},
+            {
+                "error": "Provide a query using ?q=..."
+            },
             status=400,
         )
 
     if len(query) > 500:
+
         return JsonResponse(
-            {"error": "Query must be 500 characters or fewer."},
+            {
+                "error": (
+                    "Query must be 500 characters or fewer."
+                )
+            },
             status=400,
         )
 
     try:
-        top_k = int(request.GET.get("top_k", "5"))
+
+        top_k = int(
+            request.GET.get("top_k", "5")
+        )
+
     except ValueError:
+
         return JsonResponse(
-            {"error": "top_k must be an integer."},
+            {
+                "error": "top_k must be an integer."
+            },
             status=400,
         )
 
     if not 1 <= top_k <= 10:
+
         return JsonResponse(
-            {"error": "top_k must be between 1 and 10."},
+            {
+                "error": "top_k must be between 1 and 10."
+            },
             status=400,
         )
 
     repositories_root = (
-        Path(settings.MEDIA_ROOT) / "repositories"
+        Path(settings.MEDIA_ROOT)
+        / "repositories"
     ).resolve()
 
     try:
+
         safe_id = UUID(str(repository_id))
+
     except ValueError:
+
         return JsonResponse(
-            {"error": "Invalid repository ID."},
+            {
+                "error": "Invalid repository ID."
+            },
             status=400,
         )
 
@@ -734,18 +1043,25 @@ def hybrid_search_view(request, repository_id):
     ).resolve()
 
     if not repository_dir.is_relative_to(repositories_root):
+
         return JsonResponse(
-            {"error": "Invalid repository ID."},
+            {
+                "error": "Invalid repository ID."
+            },
             status=400,
         )
 
     if not (repository_dir / "metadata.json").is_file():
+
         return JsonResponse(
-            {"error": "Repository not found."},
+            {
+                "error": "Repository not found."
+            },
             status=404,
         )
 
     try:
+
         results = hybrid_search(
             repository_dir,
             query,
@@ -760,63 +1076,124 @@ def hybrid_search_view(request, repository_id):
         })
 
     except FileNotFoundError as exc:
+
         return JsonResponse(
-            {"error": str(exc)},
+            {
+                "error": str(exc)
+            },
             status=409,
         )
 
-    except (OSError, ValueError, TypeError, RuntimeError):
+    except (
+        OSError,
+        ValueError,
+        TypeError,
+        RuntimeError,
+    ):
+
         return JsonResponse(
-            {"error": "Could not run hybrid search."},
+            {
+                "error": "Could not run hybrid search."
+            },
             status=500,
         )
 
 
-@csrf_exempt  # Local prototype only; secure before deployment.
+# ==========================================================
+# REPOSITORY QUESTION ANSWERING
+# ==========================================================
+
 @require_POST
+@repository_access_required
+@rate_limit(
+    "ask",
+    max_requests=10,
+    window_seconds=60,
+)
+@limit_llm_requests
 def ask_repository(request, repository_id):
-    """Answer questions using repository evidence."""
+    """
+    Answer questions using repository evidence.
+
+    Repository access is restricted to the browser session
+    that originally uploaded the repository.
+
+    User authentication is not required.
+    """
 
     try:
-        body = json.loads(request.body.decode("utf-8"))
+
+        body = json.loads(
+            request.body.decode("utf-8")
+        )
+
     except (json.JSONDecodeError, UnicodeDecodeError):
+
         return JsonResponse(
-            {"error": "Request body must contain valid JSON."},
+            {
+                "error": (
+                    "Request body must contain valid JSON."
+                )
+            },
             status=400,
         )
 
     if not isinstance(body, dict):
+
         return JsonResponse(
-            {"error": "Request body must be a JSON object."},
+            {
+                "error": (
+                    "Request body must be a JSON object."
+                )
+            },
             status=400,
         )
 
     question = body.get("question", "")
 
-    if not isinstance(question, str) or not question.strip():
+    if (
+        not isinstance(question, str)
+        or not question.strip()
+    ):
+
         return JsonResponse(
-            {"error": "Provide a question as a non-empty string."},
+            {
+                "error": (
+                    "Provide a question as a non-empty string."
+                )
+            },
             status=400,
         )
 
     question = question.strip()
 
     if len(question) > 1000:
+
         return JsonResponse(
-            {"error": "Question must be 1000 characters or fewer."},
+            {
+                "error": (
+                    "Question must be 1000 characters or fewer."
+                )
+            },
             status=400,
         )
 
     try:
+
         safe_id = UUID(str(repository_id))
+
     except ValueError:
+
         return JsonResponse(
-            {"error": "Invalid repository ID."},
+            {
+                "error": "Invalid repository ID."
+            },
             status=400,
         )
 
     repositories_root = (
-        Path(settings.MEDIA_ROOT) / "repositories"
+        Path(settings.MEDIA_ROOT)
+        / "repositories"
     ).resolve()
 
     repository_dir = (
@@ -824,55 +1201,84 @@ def ask_repository(request, repository_id):
     ).resolve()
 
     if not repository_dir.is_relative_to(repositories_root):
+
         return JsonResponse(
-            {"error": "Invalid repository ID."},
+            {
+                "error": "Invalid repository ID."
+            },
             status=400,
         )
 
     if not (repository_dir / "metadata.json").is_file():
+
         return JsonResponse(
-            {"error": "Repository not found."},
+            {
+                "error": "Repository not found."
+            },
             status=404,
         )
 
     if not (repository_dir / "chunks.json").is_file():
+
         return JsonResponse(
-            {"error": "Parse the repository before asking questions."},
+            {
+                "error": (
+                    "Parse the repository before asking questions."
+                )
+            },
             status=409,
         )
 
     if not (repository_dir / "semantic_index.npz").is_file():
+
         return JsonResponse(
-            {"error": "Build the semantic index before asking questions."},
+            {
+                "error": (
+                    "Build the semantic index before asking questions."
+                )
+            },
             status=409,
         )
 
     try:
+
         # Step 1: Run the existing hybrid search.
+
         hybrid_sources = hybrid_search(
             repository_dir,
             question,
             top_k=5,
         )
 
-        # Step 2: Collect broader evidence for project overview questions.
+        # Step 2: Collect broader evidence for project
+        # overview questions.
+
         if is_project_overview_question(question):
 
             overview_sources = get_project_overview_evidence(
                 repository_dir
             )
 
-            print("\n========== PROJECT OVERVIEW FILES ==========")
+            print(
+                "\n========== PROJECT OVERVIEW FILES =========="
+            )
+
             for source in overview_sources:
+
                 print(
                     f"FILE: {source.get('file_path')} | "
                     f"TYPE: {source.get('chunk_type')} | "
-                    f"LINES: {source.get('start_line')}-{source.get('end_line')}"
+                    f"LINES: {source.get('start_line')}-"
+                    f"{source.get('end_line')}"
                 )
-            print("============================================\n")
+
+            print(
+                "============================================\n"
+            )
 
             # Keep overview evidence first.
             # Add hybrid results that are not already represented.
+
             existing_paths = {
                 item.get("file_path")
                 for item in overview_sources
@@ -894,11 +1300,13 @@ def ask_repository(request, repository_id):
                 len(overview_sources),
                 "repository files;",
                 len(additional_sources[:3]),
-                "additional hybrid results."
+                "additional hybrid results.",
             )
 
         else:
+
             # Step 3: Preserve existing specific-file behavior.
+
             sources = hybrid_sources
 
             complete_file = get_requested_file_evidence(
@@ -907,6 +1315,7 @@ def ask_repository(request, repository_id):
             )
 
             if complete_file:
+
                 sources = [
                     complete_file,
                     *[
@@ -918,7 +1327,13 @@ def ask_repository(request, repository_id):
                 ]
 
         # Step 4: Generate the answer.
-        answer = generate_answer(question, sources)
+
+        answer = generate_answer(
+            question,
+            sources,
+        )
+
+        # Step 5: Preserve source citations.
 
         citations = [
             {
@@ -947,20 +1362,87 @@ def ask_repository(request, repository_id):
         })
 
     except FileNotFoundError as exc:
+
         print(f"[ASK ERROR] File not found: {exc}")
 
         return JsonResponse(
-            {"error": "Required repository evidence was not found."},
+            {
+                "error": (
+                    "Required repository evidence was not found."
+                )
+            },
             status=409,
         )
 
     except Exception as exc:
+
         import traceback
 
-        print(f"[ASK ERROR] {type(exc).__name__}: {exc}")
+        print(
+            f"[ASK ERROR] {type(exc).__name__}: {exc}"
+        )
+
         traceback.print_exc()
 
         return JsonResponse(
-            {"error": "Could not generate an answer. Check the backend logs."},
+            {
+                "error": (
+                    "Could not generate an answer. "
+                    "Check the backend logs."
+                )
+            },
             status=502,
         )
+
+
+# ==========================================================
+# REPOSITORY STATUS
+# ==========================================================
+
+@require_GET
+@repository_access_required
+@rate_limit(
+    "status",
+    max_requests=60,
+    window_seconds=60,
+)
+def repository_status(request, repository_id):
+    """
+    Check repository availability and preparation status
+    for the current browser session.
+    """
+
+    repositories_root = (
+        Path(settings.MEDIA_ROOT) / "repositories"
+    ).resolve()
+
+    repository_dir = (
+        repositories_root / str(repository_id)
+    ).resolve()
+
+    if not repository_dir.is_relative_to(repositories_root):
+
+        return JsonResponse(
+            {"error": "Invalid repository ID."},
+            status=400,
+        )
+
+    if not (repository_dir / "metadata.json").is_file():
+
+        return JsonResponse(
+            {"error": "Repository not found."},
+            status=404,
+        )
+
+    parsed = (repository_dir / "chunks.json").is_file()
+
+    indexed = (
+        repository_dir / "semantic_index.npz"
+    ).is_file()
+
+    return JsonResponse({
+        "repository_id": str(repository_id),
+        "parsed": parsed,
+        "indexed": indexed,
+        "ready": parsed and indexed,
+    })
