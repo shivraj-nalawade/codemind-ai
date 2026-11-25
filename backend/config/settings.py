@@ -4,6 +4,7 @@ Supports local development and HTTPS deployment.
 """
 
 import os
+
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -18,15 +19,26 @@ load_dotenv(BASE_DIR / ".env")
 
 
 def env_bool(name, default=False):
-    return os.getenv(name, str(default)).strip().lower() in (
-        "true", "1", "yes", "on"
+
+    return os.getenv(
+        name,
+        str(default),
+    ).strip().lower() in (
+        "true",
+        "1",
+        "yes",
+        "on",
     )
 
 
 def env_list(name, default=""):
+
     return [
         value.strip()
-        for value in os.getenv(name, default).split(",")
+        for value in os.getenv(
+            name,
+            default,
+        ).split(",")
         if value.strip()
     ]
 
@@ -37,11 +49,14 @@ def env_list(name, default=""):
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
-DEBUG = env_bool("DJANGO_DEBUG", False)
+DEBUG = env_bool(
+    "DJANGO_DEBUG",
+    False,
+)
 
 ALLOWED_HOSTS = env_list(
     "DJANGO_ALLOWED_HOSTS",
-    "localhost,127.0.0.1"
+    "localhost,127.0.0.1",
 )
 
 
@@ -72,12 +87,24 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+
     "corsheaders.middleware.CorsMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
+
     "django.middleware.common.CommonMiddleware",
+
     "django.middleware.csrf.CsrfViewMiddleware",
+
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+
+    # Personalized Learning rate limiting
+    # and concurrent AI request protection.
+
+    "learning.api.security_middleware.LearningSecurityMiddleware",
+
     "django.contrib.messages.middleware.MessageMiddleware",
+
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -95,13 +122,20 @@ ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "BACKEND": (
+            "django.template.backends.django.DjangoTemplates"
+        ),
+
         "DIRS": [],
+
         "APP_DIRS": True,
+
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
+
                 "django.contrib.auth.context_processors.auth",
+
                 "django.contrib.messages.context_processors.messages",
             ],
         },
@@ -190,7 +224,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 # DEFAULT PRIMARY KEY
 # ==========================================================
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_AUTO_FIELD = (
+    "django.db.models.BigAutoField"
+)
 
 
 # ==========================================================
@@ -199,7 +235,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = env_list(
     "DJANGO_CORS_ALLOWED_ORIGINS",
-    "http://localhost:5173,http://127.0.0.1:5173"
+    "http://localhost:5173,http://127.0.0.1:5173",
 )
 
 CORS_ALLOW_ALL_ORIGINS = False
@@ -211,7 +247,7 @@ CORS_ALLOW_ALL_ORIGINS = False
 
 CSRF_TRUSTED_ORIGINS = env_list(
     "DJANGO_CSRF_TRUSTED_ORIGINS",
-    "http://localhost:5173,http://127.0.0.1:5173"
+    "http://localhost:5173,http://127.0.0.1:5173",
 )
 
 
@@ -221,7 +257,7 @@ CSRF_TRUSTED_ORIGINS = env_list(
 
 SECURE_COOKIES = env_bool(
     "DJANGO_SECURE_COOKIES",
-    not DEBUG
+    not DEBUG,
 )
 
 SESSION_COOKIE_SECURE = SECURE_COOKIES
@@ -252,11 +288,30 @@ SECURE_REFERRER_POLICY = "same-origin"
 
 SECURE_SSL_REDIRECT = env_bool(
     "DJANGO_SECURE_SSL_REDIRECT",
-    False
+    False,
 )
 
 if env_bool("DJANGO_TRUST_PROXY", False):
+
     SECURE_PROXY_SSL_HEADER = (
         "HTTP_X_FORWARDED_PROTO",
-        "https"
+        "https",
     )
+
+
+# ==========================================================
+# REQUEST AND UPLOAD RESOURCE PROTECTION
+# ==========================================================
+
+# Maximum non-file request data: 2 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
+
+# Files larger than 1 MB are written to temporary storage
+# instead of being held entirely in memory.
+FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024
+
+# Maximum number of submitted form fields
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100
+
+# Maximum number of files per multipart request
+DATA_UPLOAD_MAX_NUMBER_FILES = 1

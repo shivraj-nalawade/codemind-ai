@@ -15,6 +15,10 @@ from groq import (
     APIStatusError,
 )
 
+from .groq_limits import (
+    protected_groq_call,
+    GroqResourceLimitError,
+)
 
 # =====================================================
 # CONFIGURATION
@@ -134,9 +138,15 @@ def generate_response(
                     "type": "json_object"
                 }
 
-            response = client.chat.completions.create(
-                **parameters
-            )
+            # =============================================
+            # PROTECTED GROQ API CALL
+            # =============================================
+
+            with protected_groq_call():
+
+                response = client.chat.completions.create(
+                    **parameters
+                )
 
             # Check whether a response was returned
 
@@ -183,6 +193,24 @@ def generate_response(
             )
 
             return content
+
+        # =============================================
+        # GROQ RESOURCE LIMIT ERRORS
+        # =============================================
+
+        except GroqResourceLimitError as error:
+
+            logger.warning(
+                "Learning AI resource limit reached: %s",
+                str(error)
+            )
+
+            # Do not retry when application resource
+            # limits have been reached.
+
+            raise LearningAIError(
+                str(error)
+            ) from None
 
         # =============================================
         # CONNECTION AND RESPONSE VALIDATION ERRORS

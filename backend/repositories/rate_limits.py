@@ -1,4 +1,5 @@
 import time
+import math
 
 from collections import deque
 from functools import wraps
@@ -8,14 +9,8 @@ from django.http import JsonResponse
 
 
 # ==========================================================
-# RATE LIMIT STORAGE
+# RATE LIMIT CONFIGURATION
 # ==========================================================
-
-_rate_limit_lock = Lock()
-
-_request_history = {}
-
-_last_cleanup = 0
 
 CLEANUP_INTERVAL = 300
 
@@ -23,12 +18,37 @@ MAX_TRACKED_KEYS = 10000
 
 
 # ==========================================================
-# CONCURRENT RESOURCE LIMITS
+# GLOBAL REQUEST LIMITS
 # ==========================================================
 
-_llm_semaphore = BoundedSemaphore(1)
+GLOBAL_LIMITS = {
+    "upload": (20, 3600),
+    "parse": (30, 3600),
+    "semantic_index": (20, 3600),
+    "ask": (20, 60),
+    "search": (120, 60),
+    "semantic_search": (60, 60),
+    "hybrid_search": (60, 60),
+    "status": (300, 60),
+}
 
-_indexing_semaphore = BoundedSemaphore(1)
+
+# ==========================================================
+# THREAD-SAFE RATE LIMIT STORAGE
+# ==========================================================
+
+_rate_limit_lock = Lock()
+
+_request_history = {}
+
+_last_cleanup = None
+
+
+# ==========================================================
+# SHARED HEAVY RESOURCE PROTECTION
+# ==========================================================
+
+_heavy_processing_semaphore = BoundedSemaphore(1)
 
 
 # ==========================================================
@@ -48,15 +68,76 @@ def get_client_ip(request):
     )
 
 
+def get_client_identity(request):
+    """
+    Identify existing anonymous browser sessions.
+
+    Requests without an existing session share an
+    IP-based fallback quota.
+
+    Do not create a new database session solely
+    for rate limiting.
+    """
+
+    session_key = request.session.session_key
+
+    if session_key:
+
+        return (
+            "session",
+            session_key,
+        )
+
+    return (
+        "ip",
+        get_client_ip(request),
+    )
+
+
 # ==========================================================
-# RATE LIMIT CLEANUP
+# RATE LIMIT RESPONSE
+# ==========================================================
+
+def rate_limit_response(
+    message,
+    retry_after,
+):
+
+    retry_after = max(
+        1,
+        math.ceil(retry_after),
+    )
+
+    response = JsonResponse(
+        {
+            "error": message,
+            "retry_after": retry_after,
+        },
+        status=429,
+    )
+
+    response["Retry-After"] = str(
+        retry_after
+    )
+
+    response["Cache-Control"] = "no-store"
+
+    return response
+
+
+# ==========================================================
+# CLEAN EXPIRED REQUEST HISTORY
 # ==========================================================
 
 def cleanup_expired_requests(now):
 
     global _last_cleanup
 
-    if now - _last_cleanup < CLEANUP_INTERVAL:
+    if (
+        _last_cleanup is not None
+        and now - _last_cleanup < CLEANUP_INTERVAL
+    ):
+
         return
 
     expired_keys = []
@@ -67,16 +148,112 @@ def cleanup_expired_requests(now):
 
         window = entry["window"]
 
-        while timestamps and now - timestamps[0] >= window:
+        while (
+            timestamps
+            and now - timestamps[0] >= window
+        ):
+
             timestamps.popleft()
 
         if not timestamps:
+
             expired_keys.append(key)
 
     for key in expired_keys:
-        _request_history.pop(key, None)
+
+        _request_history.pop(
+            key,
+            None,
+        )
 
     _last_cleanup = now
+
+
+# ==========================================================
+# ATOMIC RATE LIMIT VALIDATION
+# ==========================================================
+
+def check_rate_limits(rules):
+    """
+    Validate all applicable request limits atomically.
+
+    Returns None when allowed, otherwise the number
+    of seconds before another request can be attempted.
+    """
+
+    with _rate_limit_lock:
+
+        now = time.monotonic()
+
+        cleanup_expired_requests(now)
+
+        new_keys = {
+            key
+            for key, _, _ in rules
+            if key not in _request_history
+        }
+
+        if (
+            len(_request_history) + len(new_keys)
+            > MAX_TRACKED_KEYS
+        ):
+
+            return CLEANUP_INTERVAL
+
+        retry_after = 0
+
+        # Check all applicable limits before recording
+        # the request.
+
+        for key, maximum, window in rules:
+
+            entry = _request_history.get(key)
+
+            if entry is None:
+
+                continue
+
+            timestamps = entry["timestamps"]
+
+            while (
+                timestamps
+                and now - timestamps[0] >= window
+            ):
+
+                timestamps.popleft()
+
+            if len(timestamps) >= maximum:
+
+                remaining = (
+                    window
+                    - (now - timestamps[0])
+                )
+
+                retry_after = max(
+                    retry_after,
+                    remaining,
+                )
+
+        if retry_after > 0:
+
+            return retry_after
+
+        # Record the request only when every limit passes.
+
+        for key, maximum, window in rules:
+
+            if key not in _request_history:
+
+                _request_history[key] = {
+                    "timestamps": deque(),
+                    "window": window,
+                }
+
+            _request_history[key][
+                "timestamps"
+            ].append(now)
+
+        return None
 
 
 # ==========================================================
@@ -94,83 +271,66 @@ def rate_limit(
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
 
-            client_ip = get_client_ip(request)
+            client_identity = get_client_identity(
+                request
+            )
 
-            key = (action, client_ip)
+            # Individual session or fallback IP limit.
 
-            now = time.monotonic()
+            rules = [
+                (
+                    (
+                        "repository_client",
+                        action,
+                        client_identity,
+                    ),
+                    max_requests,
+                    window_seconds,
+                )
+            ]
 
-            with _rate_limit_lock:
+            # Global protection across all visitors.
 
-                cleanup_expired_requests(now)
+            global_limit = GLOBAL_LIMITS.get(
+                action
+            )
 
-                if key not in _request_history:
+            if global_limit:
 
-                    if len(_request_history) >= MAX_TRACKED_KEYS:
-
-                        response = JsonResponse(
-                            {
-                                "error": (
-                                    "Server is temporarily busy. "
-                                    "Please try again later."
-                                )
-                            },
-                            status=429,
-                        )
-
-                        response["Retry-After"] = "300"
-
-                        return response
-
-                    _request_history[key] = {
-                        "timestamps": deque(),
-                        "window": window_seconds,
-                    }
-
-                timestamps = (
-                    _request_history[key]["timestamps"]
+                global_maximum, global_window = (
+                    global_limit
                 )
 
-                # Remove requests outside the current window.
-
-                while (
-                    timestamps
-                    and now - timestamps[0] >= window_seconds
-                ):
-
-                    timestamps.popleft()
-
-                # Reject requests exceeding the limit.
-
-                if len(timestamps) >= max_requests:
-
-                    retry_after = max(
-                        1,
-                        int(
-                            window_seconds
-                            - (now - timestamps[0])
-                        ) + 1,
+                rules.append(
+                    (
+                        (
+                            "repository_global",
+                            action,
+                        ),
+                        global_maximum,
+                        global_window,
                     )
+                )
 
-                    response = JsonResponse(
-                        {
-                            "error": (
-                                "Too many requests. "
-                                f"Please try again in "
-                                f"{retry_after} seconds."
-                            ),
-                            "retry_after": retry_after,
-                        },
-                        status=429,
-                    )
+            retry_after = check_rate_limits(
+                rules
+            )
 
-                    response["Retry-After"] = str(
-                        retry_after
-                    )
+            if retry_after is not None:
 
-                    return response
+                retry_after = max(
+                    1,
+                    math.ceil(retry_after),
+                )
 
-                timestamps.append(now)
+                return rate_limit_response(
+                    (
+                        "Too many requests. "
+                        f"Please try again in "
+                        f"{retry_after} seconds."
+                    ),
+                    retry_after,
+                )
 
             return view_func(
                 request,
@@ -187,7 +347,10 @@ def rate_limit(
 # CONCURRENT RESOURCE PROTECTION
 # ==========================================================
 
-def resource_limit(semaphore, error_message):
+def resource_limit(
+    semaphore,
+    error_message,
+):
 
     def decorator(view_func):
 
@@ -200,17 +363,10 @@ def resource_limit(semaphore, error_message):
 
             if not acquired:
 
-                response = JsonResponse(
-                    {
-                        "error": error_message,
-                        "retry_after": 10,
-                    },
-                    status=429,
+                return rate_limit_response(
+                    error_message,
+                    10,
                 )
-
-                response["Retry-After"] = "10"
-
-                return response
 
             try:
 
@@ -234,10 +390,11 @@ def resource_limit(semaphore, error_message):
 # ==========================================================
 
 limit_llm_requests = resource_limit(
-    _llm_semaphore,
+    _heavy_processing_semaphore,
     (
-        "The AI assistant is currently processing "
-        "another request. Please try again shortly."
+        "The server is currently processing "
+        "another AI or indexing request. "
+        "Please try again shortly."
     ),
 )
 
@@ -247,9 +404,10 @@ limit_llm_requests = resource_limit(
 # ==========================================================
 
 limit_indexing_requests = resource_limit(
-    _indexing_semaphore,
+    _heavy_processing_semaphore,
     (
-        "Another repository is currently being indexed. "
+        "The server is currently processing "
+        "another AI or indexing request. "
         "Please try again shortly."
     ),
 )
