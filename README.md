@@ -1239,23 +1239,6 @@ These protections reduce common application risks but do not constitute a compre
 
 ---
 
-<a id="current-limitations"></a>
-
-## ⚠️ Current Limitations
-
-- Public availability depends on the local host machine.
-- Local Qwen inference performance depends on available hardware.
-- Groq and ngrok free-tier usage limits apply.
-- Large repositories require additional parsing and indexing time.
-- AI-generated answers may occasionally contain inaccuracies.
-- Repository ingestion currently supports ZIP archives.
-- Practical exercises do not include a dedicated code execution sandbox.
-- SQLite is used for the current deployment.
-- Rate-limiting state is maintained within the running backend process.
-- Generated indexing artifacts do not have a comprehensive independent storage quota.
-
----
-
 <a id="future-enhancements"></a>
 
 ## 🔮 Future Enhancements
